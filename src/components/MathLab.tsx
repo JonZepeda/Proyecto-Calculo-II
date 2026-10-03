@@ -227,14 +227,14 @@ export const MathLab: React.FC = () => {
     <div className="space-y-4">
       
       {/* Introduction Card */}
-      <div className="bg-[#0c0e14] border border-[#1a1e27] rounded-xl p-4 shadow-xl">
+      <div className="dsp-chassis rounded-lg p-4">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs uppercase font-bold text-cyan-400 tracking-wider">
                 Demostración Didáctica de Cálculo Integral
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#12151d] text-[#94a3b8] border border-[#1e2330]">
+              <span className="text-xs font-mono px-2 py-0.5 rounded bg-[#12151d] text-[#94a3b8] border border-[#1e2330]">
                 Sumas de Riemann & Ortogonalidad
               </span>
             </div>
@@ -248,7 +248,7 @@ export const MathLab: React.FC = () => {
         </div>
 
         {/* Formula Banner */}
-        <div className="mt-3 bg-[#08090d] p-3 rounded-lg border border-[#171a22] overflow-x-auto text-center">
+        <div className="mt-3 dsp-well p-3 rounded-md overflow-x-auto text-center">
           <div
             dangerouslySetInnerHTML={renderFormula(
               `\\hat{f}(\\xi) = \\int_{-\\infty}^{\\infty} f(t) e^{-i 2\\pi \\xi t} \\, dt = \\underbrace{\\int_{-\\infty}^{\\infty} f(t) \\cos(2\\pi \\xi t) \\, dt}_{I_{\\text{cos}}(\\xi)} - i \\underbrace{\\int_{-\\infty}^{\\infty} f(t) \\sin(2\\pi \\xi t) \\, dt}_{I_{\\text{sin}}(\\xi)}`
@@ -261,20 +261,20 @@ export const MathLab: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         
         {/* Left Column: Interactive Controls */}
-        <div className="bg-[#0c0e14] border border-[#1a1e27] rounded-xl p-4 shadow-xl flex flex-col gap-3">
+        <div className="dsp-chassis rounded-lg p-4 flex flex-col gap-3">
           <h3 className="font-mono font-bold text-xs text-white uppercase tracking-wider flex items-center gap-2">
             <Sigma className="w-3.5 h-3.5 text-cyan-400" />
             <span>Parámetros de Integración</span>
           </h3>
 
           {/* Probe frequency slider */}
-          <div className="bg-[#090b0f] p-3 rounded-lg border border-[#171a22] flex flex-col gap-2">
+          <div className="dsp-meter-card p-3 rounded-md flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-mono text-[#94a3b8]">
+              <label className="text-xs font-mono text-[#94a3b8]">
                 Frecuencia de Prueba (ξ)
               </label>
               <span className="font-mono text-sm font-bold text-cyan-400">
-                {probeFreq} <span className="text-[10px] text-[#64748b]">Hz</span>
+                {probeFreq} <span className="text-xs text-[#94a3b8]">Hz</span>
               </span>
             </div>
 
@@ -289,9 +289,10 @@ export const MathLab: React.FC = () => {
             />
 
             {/* Quick Test Buttons */}
-            <div className="grid grid-cols-2 gap-1.5 pt-1 text-[11px]">
+            <div className="grid grid-cols-2 gap-1.5 pt-1 text-xs">
               <button
                 onClick={() => setProbeFreq(60)}
+                aria-pressed={probeFreq === 60}
                 className={`px-2 py-1.5 rounded-lg border font-medium transition-all ${
                   probeFreq === 60
                     ? 'bg-rose-950 border-rose-600 text-rose-300'
@@ -302,6 +303,7 @@ export const MathLab: React.FC = () => {
               </button>
               <button
                 onClick={() => setProbeFreq(140)}
+                aria-pressed={probeFreq === 140}
                 className={`px-2 py-1.5 rounded-lg border font-medium transition-all ${
                   probeFreq === 140
                     ? 'bg-amber-950 border-amber-600 text-amber-300'
@@ -312,6 +314,7 @@ export const MathLab: React.FC = () => {
               </button>
               <button
                 onClick={() => setProbeFreq(350)}
+                aria-pressed={probeFreq === 350}
                 className={`px-2 py-1.5 rounded-lg border font-medium transition-all ${
                   probeFreq === 350
                     ? 'bg-cyan-950 border-cyan-600 text-cyan-300'
@@ -322,6 +325,7 @@ export const MathLab: React.FC = () => {
               </button>
               <button
                 onClick={() => setProbeFreq(700)}
+                aria-pressed={probeFreq === 700}
                 className={`px-2 py-1.5 rounded-lg border font-medium transition-all ${
                   probeFreq === 700
                     ? 'bg-violet-950 border-violet-600 text-violet-300'
@@ -334,27 +338,27 @@ export const MathLab: React.FC = () => {
           </div>
 
           {/* Numerical Integration Result */}
-          <div className="bg-[#090b0f] p-3 rounded-lg border border-[#171a22] flex flex-col gap-2">
-            <span className="text-[10px] font-mono text-[#64748b] uppercase font-semibold">
+          <div className="dsp-meter-card p-3 rounded-md flex flex-col gap-2">
+            <span className="text-xs font-mono text-[#94a3b8] uppercase font-semibold">
               Resultado Numérico de la Integral
             </span>
 
             <div className="space-y-1 text-xs font-mono">
               <div className="flex justify-between py-1 border-b border-[#141720]">
-                <span className="text-[#858e9f]">Parte Real ∫ f(t)cos(ωt)dt:</span>
+                <span className="text-[#94a3b8]">Parte Real ∫ f(t)cos(ωt)dt:</span>
                 <span className="font-bold text-emerald-400">
                   {riemannResult.totalAreaCos.toFixed(4)}
                 </span>
               </div>
               <div className="flex justify-between py-1 border-b border-[#141720]">
-                <span className="text-[#858e9f]">Parte Imag -∫ f(t)sin(ωt)dt:</span>
+                <span className="text-[#94a3b8]">Parte Imag -∫ f(t)sin(ωt)dt:</span>
                 <span className="font-bold text-cyan-400">
                   {(-riemannResult.totalAreaSin).toFixed(4)}
                 </span>
               </div>
               <div className="flex justify-between py-1 pt-1 font-bold text-xs">
                 <span className="text-[#f1f5f9]">Magnitud |f̂(ξ)|:</span>
-                <span className={isResonance ? 'text-rose-400' : 'text-[#64748b]'}>
+                <span className={isResonance ? 'text-rose-400' : 'text-[#94a3b8]'}>
                   {riemannResult.magnitude.toFixed(4)}
                 </span>
               </div>
@@ -362,7 +366,7 @@ export const MathLab: React.FC = () => {
 
             {/* Diagnostic Interpretation */}
             <div
-              className={`mt-1 p-2 rounded border text-[11px] font-mono leading-relaxed flex items-start gap-2 ${
+              className={`mt-1 p-2 rounded border text-xs font-mono leading-relaxed flex items-start gap-2 ${
                 isResonance
                   ? 'bg-[#1c0f13] border-[#471822] text-rose-200'
                   : 'bg-[#0e171f] border-[#18394f] text-cyan-200'
@@ -387,11 +391,11 @@ export const MathLab: React.FC = () => {
           </div>
 
           {/* Full Riemann Spectrum Sweep Preview */}
-          <div className="bg-[#090b0f] p-3 rounded-lg border border-[#171a22]">
-            <span className="text-[10px] font-mono text-[#64748b] block mb-1">
+          <div className="dsp-meter-card p-3 rounded-md">
+            <span className="text-xs font-mono text-[#94a3b8] block mb-1">
               Barrido Riemann (20 - 1500 Hz):
             </span>
-            <div className="w-full h-24 rounded overflow-hidden border border-[#141720] bg-[#050608]">
+            <div className="w-full h-24 rounded-md overflow-hidden dsp-well">
               <canvas
                 ref={spectrumCanvasRef}
                 width={300}
@@ -404,17 +408,17 @@ export const MathLab: React.FC = () => {
         </div>
 
         {/* Center & Right Columns: 3-Stage Canvas Visualizer */}
-        <div className="lg:col-span-2 bg-[#0c0e14] border border-[#1a1e27] rounded-xl p-4 shadow-xl flex flex-col gap-3">
+        <div className="lg:col-span-2 dsp-chassis rounded-lg p-4 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h3 className="font-mono font-bold text-xs text-white uppercase tracking-wider">
               Desglose Gráfico de la Integral de Riemann
             </h3>
-            <span className="text-[10px] font-mono text-[#64748b]">
+            <span className="text-xs font-mono text-[#94a3b8]">
               Ventana: 40 ms (N = 300 rectángulos)
             </span>
           </div>
 
-          <div className="relative w-full h-[460px] rounded-lg overflow-hidden border border-[#171a22] bg-[#050608]">
+          <div className="relative w-full h-[460px] rounded-md overflow-hidden dsp-well">
             <canvas
               ref={canvasRef}
               width={750}
@@ -423,14 +427,14 @@ export const MathLab: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-2 text-[10px] font-mono text-center pt-1 text-[#64748b]">
-            <div className="bg-[#090b0f] p-1.5 rounded border border-[#151922]">
+          <div className="grid grid-cols-3 gap-2 text-xs font-mono text-center pt-1 text-[#94a3b8]">
+            <div className="dsp-meter-card p-1.5 rounded-md">
               <span className="text-amber-400 font-bold">1. Producto:</span> f(t) • cos(2πξt)
             </div>
-            <div className="bg-[#090b0f] p-1.5 rounded border border-[#151922]">
+            <div className="dsp-meter-card p-1.5 rounded-md">
               <span className="text-cyan-400 font-bold">2. Partición:</span> Δt = 1/44.1 kHz
             </div>
-            <div className="bg-[#090b0f] p-1.5 rounded border border-[#151922]">
+            <div className="dsp-meter-card p-1.5 rounded-md">
               <span className="text-emerald-400 font-bold">3. Integral:</span> ∫ ≈ ∑ g(tₙ)Δt
             </div>
           </div>
@@ -441,50 +445,50 @@ export const MathLab: React.FC = () => {
       {/* 4 Theoretical Cornerstones Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
         
-        <div className="bg-[#0c0e14] border border-[#1a1e27] p-3.5 rounded-lg flex flex-col gap-1.5">
-          <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider font-mono">
+        <div className="dsp-chassis p-3.5 rounded-lg flex flex-col gap-1.5">
+          <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">
             1. Integral Impropia
           </span>
           <h4 className="font-semibold text-xs text-[#e2e8f0]">
             Convergencia en L²(ℝ)
           </h4>
-          <p className="text-[11px] text-[#858e9f] leading-relaxed">
+          <p className="text-xs text-[#94a3b8] leading-relaxed">
             La transformada existe para toda señal de energía finita, evaluando el límite simétrico cuando el horizonte temporal tiende a infinito.
           </p>
         </div>
 
-        <div className="bg-[#0c0e14] border border-[#1a1e27] p-3.5 rounded-lg flex flex-col gap-1.5">
-          <span className="text-[10px] font-bold text-violet-400 uppercase tracking-wider font-mono">
+        <div className="dsp-chassis p-3.5 rounded-lg flex flex-col gap-1.5">
+          <span className="text-xs font-bold text-violet-400 uppercase tracking-wider font-mono">
             2. Ortogonalidad
           </span>
           <h4 className="font-semibold text-xs text-[#e2e8f0]">
             Base Armónica Trigonométrica
           </h4>
-          <p className="text-[11px] text-[#858e9f] leading-relaxed">
+          <p className="text-xs text-[#94a3b8] leading-relaxed">
             La integral de dos frecuencias distintas sobre un periodo es cero. Por ello, la integral solo arroja valor no nulo en las componentes existentes.
           </p>
         </div>
 
-        <div className="bg-[#0c0e14] border border-[#1a1e27] p-3.5 rounded-lg flex flex-col gap-1.5">
-          <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider font-mono">
+        <div className="dsp-chassis p-3.5 rounded-lg flex flex-col gap-1.5">
+          <span className="text-xs font-bold text-amber-400 uppercase tracking-wider font-mono">
             3. Convolución
           </span>
           <h4 className="font-semibold text-xs text-[#e2e8f0]">
             De Integral a Producto
           </h4>
-          <p className="text-[11px] text-[#858e9f] leading-relaxed">
+          <p className="text-xs text-[#94a3b8] leading-relaxed">
             La integral de convolución en el tiempo (f * h)(t) se transforma en una multiplicación espectral F(ξ) • H(ξ), permitiendo filtrado a 60 FPS.
           </p>
         </div>
 
-        <div className="bg-[#0c0e14] border border-[#1a1e27] p-3.5 rounded-lg flex flex-col gap-1.5">
-          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider font-mono">
+        <div className="dsp-chassis p-3.5 rounded-lg flex flex-col gap-1.5">
+          <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider font-mono">
             4. Parseval
           </span>
           <h4 className="font-semibold text-xs text-[#e2e8f0]">
             Conservación de Energía
           </h4>
-          <p className="text-[11px] text-[#858e9f] leading-relaxed">
+          <p className="text-xs text-[#94a3b8] leading-relaxed">
             La integral del cuadrado de la amplitud temporal equivale a la integral de la densidad espectral. Anular una muesca no degrada la inteligibilidad.
           </p>
         </div>

@@ -50,7 +50,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
   };
 
   return (
-    <div className="bg-[#0c0e14] border border-[#1a1e27] rounded-xl p-3.5 shadow-xl flex flex-col gap-3">
+    <div className="dsp-chassis rounded-lg p-3.5 flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -58,13 +58,13 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
           <span className="font-mono text-xs font-semibold text-[#f1f5f9] tracking-wider uppercase">
             Filtro Convolucional
           </span>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#12151d] text-[#94a3b8] border border-[#1e2432]">
+          <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-[#12151d] text-[#94a3b8] border border-[#1e2432]">
             H(ξ) • f̂(ξ)
           </span>
         </div>
 
         {/* Filter Type Pills */}
-        <div className="flex items-center bg-[#090b0f] p-0.5 rounded-lg border border-[#1a1e27] text-xs font-mono">
+        <div className="flex items-center dsp-well p-0.5 rounded-md text-xs font-mono">
           <button
             onClick={() => handleTypeChange('notch')}
             className={`px-2.5 py-0.5 rounded transition-colors ${
@@ -112,7 +112,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors ${
               t.on
                 ? 'bg-[#101b15] text-emerald-300 border-[#1f402c]'
-                : 'bg-[#090b0f] text-[#64748b] border-[#181c25] hover:text-[#94a3b8]'
+                : 'dsp-meter-card text-[#94a3b8] hover:text-[#94a3b8]'
             }`}
           >
             <span
@@ -129,13 +129,13 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         
         {/* Frequency Slider */}
-        <div className="bg-[#090b0f] p-3 rounded-lg border border-[#171a22] flex flex-col gap-2">
+        <div className="dsp-meter-card p-3 rounded-md flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-mono text-[#94a3b8]">
+            <span className="text-xs font-mono text-[#94a3b8]">
               Frecuencia Notch (f₀)
             </span>
             <span className="font-mono text-sm font-bold text-cyan-400">
-              {filterParams.frequency} <span className="text-[10px] text-[#64748b]">Hz</span>
+              {filterParams.frequency} <span className="text-xs text-[#94a3b8]">Hz</span>
             </span>
           </div>
 
@@ -150,7 +150,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
           />
 
           {/* Fine Tuning Buttons */}
-          <div className="flex items-center justify-between pt-1 text-[10px] font-mono text-[#64748b]">
+          <div className="flex items-center justify-between pt-1 text-xs font-mono text-[#94a3b8]">
             <div className="flex items-center gap-1">
               <button
                 onClick={() => adjustFreq(-100)}
@@ -198,9 +198,9 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
         </div>
 
         {/* Q Factor (Quality / Bandwidth) */}
-        <div className="bg-[#090b0f] p-3 rounded-lg border border-[#171a22] flex flex-col gap-2">
+        <div className="dsp-meter-card p-3 rounded-md flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-mono text-[#94a3b8]">
+            <span className="text-xs font-mono text-[#94a3b8]">
               Factor Q (Selectividad)
             </span>
             <span className="font-mono text-sm font-bold text-violet-400">
@@ -218,7 +218,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
             className="w-full h-1 bg-[#1a1e27] rounded cursor-pointer"
           />
 
-          <div className="flex items-center justify-between pt-1 text-[10px] font-mono text-[#64748b]">
+          <div className="flex items-center justify-between pt-1 text-xs font-mono text-[#94a3b8]">
             <span>Ancho (Q=1)</span>
             <span className="text-[#94a3b8]">
               Δf ≈ {(filterParams.frequency / filterParams.q).toFixed(1)} Hz
@@ -230,7 +230,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
       </div>
 
       {/* Engineering Principle Note */}
-      <div className="bg-[#080a0e] p-2.5 rounded-lg border border-[#151922] text-[11px] font-mono text-[#858e9f] flex items-start gap-2">
+      <div className="dsp-well p-2.5 rounded-md text-xs font-mono text-[#858e9f] flex items-start gap-2">
         <Cpu className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
         <p className="leading-relaxed">
           <strong className="text-[#e2e8f0]">Convolución en Frecuencia:</strong> La integral temporal <code className="text-cyan-300">(f * h)(t)</code> equivale al producto algebraico <code className="text-cyan-300">Y(ξ) = F(ξ) • H(ξ)</code>, anulando selectivamente <code className="text-rose-300">H(f₀) ≈ 0</code> con atenuación analítica.

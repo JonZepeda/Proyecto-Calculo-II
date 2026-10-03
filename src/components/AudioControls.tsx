@@ -70,7 +70,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
   };
 
   return (
-    <div className="bg-[#0c0e14] border border-[#1a1e27] rounded-xl p-3 shadow-xl">
+    <div className="dsp-chassis rounded-lg p-3">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         
         {/* Left: Master Transport Toggle & Signal State */}
@@ -86,7 +86,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
           >
             <span
               className={`w-2 h-2 rounded-full transition-colors ${
-                isPlaying ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-[#475569]'
+                isPlaying ? 'bg-emerald-500' : 'bg-[#475569]'
               }`}
             />
             {isPlaying ? (
@@ -110,7 +110,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
                 {sourceType === 'file' && (fileName || 'Archivo de Audio')}
               </span>
             </div>
-            <p className="font-mono text-[10px] text-[#64748b]">
+            <p className="font-mono text-xs text-[#94a3b8]">
               {isPlaying ? 'Motor DSP activo • Procesamiento continuo' : 'Motor en pausa • Listo para capturar'}
             </p>
           </div>
@@ -118,7 +118,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
 
         {/* Center: Hardware Channel Presets */}
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[10px] font-mono uppercase text-[#64748b] tracking-wider mr-1">
+          <span className="text-xs font-mono uppercase text-[#94a3b8] tracking-wider mr-1">
             CANAL:
           </span>
 
@@ -126,7 +126,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
             onClick={() => handleSelectPreset('hum60')}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-mono transition-colors border ${
               sourceType === 'synthetic' && currentPreset === 'hum60'
-                ? 'bg-[#161a22] border-[#2c3445] text-amber-300 shadow-inner'
+                ? 'bg-[#161a22] border-[#2c3445] text-amber-300'
                 : 'bg-[#0e1016] border-[#181c25] text-[#858e9f] hover:text-[#d1d5db] hover:border-[#222734]'
             }`}
           >
@@ -143,7 +143,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
             onClick={() => handleSelectPreset('whistle2500')}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-mono transition-colors border ${
               sourceType === 'synthetic' && currentPreset === 'whistle2500'
-                ? 'bg-[#161a22] border-[#2c3445] text-cyan-300 shadow-inner'
+                ? 'bg-[#161a22] border-[#2c3445] text-cyan-300'
                 : 'bg-[#0e1016] border-[#181c25] text-[#858e9f] hover:text-[#d1d5db] hover:border-[#222734]'
             }`}
           >
@@ -160,7 +160,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
             onClick={() => handleSelectPreset('test1000')}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-mono transition-colors border ${
               sourceType === 'synthetic' && currentPreset === 'test1000'
-                ? 'bg-[#161a22] border-[#2c3445] text-violet-300 shadow-inner'
+                ? 'bg-[#161a22] border-[#2c3445] text-violet-300'
                 : 'bg-[#0e1016] border-[#181c25] text-[#858e9f] hover:text-[#d1d5db] hover:border-[#222734]'
             }`}
           >
@@ -177,7 +177,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
             onClick={() => handleSelectPreset('voicePinkNoise')}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-mono transition-colors border ${
               sourceType === 'synthetic' && currentPreset === 'voicePinkNoise'
-                ? 'bg-[#161a22] border-[#2c3445] text-emerald-300 shadow-inner'
+                ? 'bg-[#161a22] border-[#2c3445] text-emerald-300'
                 : 'bg-[#0e1016] border-[#181c25] text-[#858e9f] hover:text-[#d1d5db] hover:border-[#222734]'
             }`}
           >

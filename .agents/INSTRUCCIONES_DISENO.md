@@ -44,7 +44,7 @@ Anota al final de este archivo qué componentes tocaste y qué quedó pendiente.
 
 ---
 ### Registro de Antigravity
-(vacío)
+(Antigravity no lo completó; la pasada 2 la aplicó Claude Code con subagentes — ver commit siguiente a 4b74d59.)
 
 ---
 ### Revisión de Claude Code — pasada 1 (MathLab.tsx y ReportViewer.tsx)
@@ -74,3 +74,9 @@ NO está terminado (la búsqueda de patrones prohibidos no da 0):
 5. Navbar.tsx: `shadow-inner`, `shadow-sm` y `text-[10px]/[11px]`; mismas correcciones.
 6. Rellena el "Registro de Antigravity" (sigue vacío) con lo que tocaste y lo que dejaste pendiente.
 Cuando termines, corre la búsqueda: `grep -rnE "rounded-xl|rounded-2xl|shadow-(xl|lg|inner)|text-\[(9|10|11)px\]" src` debe dar 0.
+
+
+---
+### Cierre (Claude Code)
+Pasada 2 aplicada en los 9 componentes + App.tsx: tokens dsp-*, sin rounded-xl/shadow/blur/gradient, texto >= 12px, grises #94a3b8, roles ARIA en pestañas, foco global en style.css. tsc, validate-dsp y build OK.
+Pendiente opcional: ~134 hex sueltos restantes (colores secundarios) por unificar a tokens.

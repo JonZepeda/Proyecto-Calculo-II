@@ -69,20 +69,20 @@ export const Spectrogram: React.FC<SpectrogramProps> = ({ isPlaying }) => {
   }, [sourceMode, isPlaying]);
 
   return (
-    <div className="bg-[#0c0e14] border border-[#1a1e27] rounded-xl p-3.5 shadow-xl flex flex-col gap-3">
+    <div className="dsp-chassis rounded-lg p-3.5 flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="font-mono text-xs font-semibold text-[#f1f5f9] tracking-wider uppercase">
             Espectrograma en Cascada
           </span>
-          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[#12151d] text-[#94a3b8] border border-[#1e2432]">
+          <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-[#12151d] text-[#94a3b8] border border-[#1e2432]">
             SONOGRAMA [TIEMPO vs FRECUENCIA]
           </span>
         </div>
 
         {/* Source switch */}
-        <div className="flex items-center bg-[#090b0f] p-0.5 rounded-lg border border-[#1a1e27] text-xs font-mono">
+        <div className="flex items-center dsp-well p-0.5 rounded-md text-xs font-mono">
           <button
             onClick={() => setSourceMode('clean')}
             className={`px-2 py-0.5 rounded transition-colors ${
@@ -107,7 +107,7 @@ export const Spectrogram: React.FC<SpectrogramProps> = ({ isPlaying }) => {
       </div>
 
       {/* Recessed Sonogram Viewport */}
-      <div className="relative w-full h-36 sm:h-40 rounded-lg overflow-hidden border border-[#171a22] bg-[#050608]">
+      <div className="relative w-full h-36 sm:h-40 dsp-well rounded-md overflow-hidden">
         <canvas
           ref={canvasRef}
           width={640}
@@ -116,7 +116,7 @@ export const Spectrogram: React.FC<SpectrogramProps> = ({ isPlaying }) => {
         />
 
         {/* Frequency Y-Axis Labels */}
-        <div className="absolute right-2 top-1 bottom-1 flex flex-col justify-between items-end text-[9px] font-mono text-[#64748b] pointer-events-none">
+        <div className="absolute right-2 top-1 bottom-1 flex flex-col justify-between items-end text-xs font-mono text-[#94a3b8] pointer-events-none">
           <span>~10 kHz</span>
           <span>5 kHz</span>
           <span>2.5 kHz</span>
@@ -125,7 +125,7 @@ export const Spectrogram: React.FC<SpectrogramProps> = ({ isPlaying }) => {
         </div>
 
         {/* Time Scroll Indicator */}
-        <div className="absolute bottom-1.5 left-2 text-[9px] font-mono text-[#475569]">
+        <div className="absolute bottom-1.5 left-2 text-xs font-mono text-[#94a3b8]">
           ← Tiempo transcurrido (Scroll continuo)
         </div>
       </div>

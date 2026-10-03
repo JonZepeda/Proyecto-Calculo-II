@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { audioEngine } from '../dsp/audioEngine';
 import { FilterParams } from '../dsp/types';
-import { Crosshair, ScanLine } from 'lucide-react';
+import { Crosshair, Activity } from 'lucide-react';
 
 interface SpectrumAnalyzerProps {
   filterParams: FilterParams;
@@ -91,7 +91,7 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
 
       // Draw dB grid lines (-12dB, -24dB, -36dB, -48dB)
       ctx.lineWidth = 1;
-      ctx.strokeStyle = '#12161f';
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
       const dbSteps = [0.2, 0.4, 0.6, 0.8];
       dbSteps.forEach(ratio => {
         const y = height * ratio;
@@ -100,8 +100,8 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
         ctx.lineTo(width, y);
         ctx.stroke();
 
-        ctx.fillStyle = '#475569';
-        ctx.font = '9px JetBrains Mono, monospace';
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '11px JetBrains Mono, monospace';
         const dbVal = Math.round(-ratio * 60);
         ctx.fillText(`${dbVal}dB`, 5, y - 3);
       });
@@ -110,15 +110,15 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
       const guideFreqs = [60, 120, 250, 500, 1000, 2500, 5000, 10000];
       guideFreqs.forEach(f => {
         const x = freqToX(f, width);
-        ctx.strokeStyle = '#12161f';
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, height);
         ctx.stroke();
 
-        ctx.fillStyle = '#475569';
-        ctx.font = '9px JetBrains Mono, monospace';
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '11px JetBrains Mono, monospace';
         const label = f >= 1000 ? `${f / 1000}k` : `${f}`;
         ctx.fillText(label, x + 3, height - 5);
       });
@@ -185,7 +185,7 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
 
       // Filter frequency label badge
       ctx.fillStyle = '#f43f5e';
-      ctx.font = 'bold 10px JetBrains Mono, monospace';
+      ctx.font = 'bold 11px JetBrains Mono, monospace';
       const fLabel = `${Math.round(filterParams.frequency)} Hz`;
       ctx.fillText(fLabel, Math.max(5, Math.min(width - 65, notchX + 6)), 14);
 
@@ -225,14 +225,14 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
   };
 
   return (
-    <div className="bg-[#0c0e14] border border-[#1a1e27] rounded-xl p-3.5 shadow-xl flex flex-col gap-3">
+    <div className="dsp-chassis rounded-lg p-3.5 flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="font-mono text-xs font-semibold text-[#f1f5f9] tracking-wider uppercase">
             Analizador Espectral
           </span>
-          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[#12151d] text-[#94a3b8] border border-[#1e2432]">
+          <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-[#12151d] text-[#94a3b8] border border-[#1e2432]">
             |f̂(ξ)| [FOURIER FFT]
           </span>
         </div>
@@ -244,11 +244,11 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
             className="flex items-center gap-1.5 bg-[#171216] border border-[#3d1e28] text-rose-300 hover:text-white hover:bg-[#251520] px-2.5 py-1 rounded text-xs font-mono transition-colors"
             title="Escanear espectro y sintonizar muesca sobre el armónico parásito"
           >
-            <ScanLine className="w-3 h-3 text-rose-400" />
+            <Activity className="w-3 h-3 text-rose-400" />
             <span>Auto-Detectar</span>
           </button>
 
-          <div className="flex items-center bg-[#090b0f] p-0.5 rounded-lg border border-[#1a1e27] text-xs font-mono">
+          <div className="flex items-center dsp-well p-0.5 rounded-md text-xs font-mono">
             <button
               onClick={() => setIsLogScale(true)}
               className={`px-2 py-0.5 rounded transition-colors ${
@@ -270,7 +270,7 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
       </div>
 
       {/* Canvas Display Well */}
-      <div className="relative w-full h-52 sm:h-56 rounded-lg overflow-hidden border border-[#171a22] bg-[#050608] cursor-crosshair">
+      <div className="relative w-full h-52 sm:h-56 dsp-well rounded-md overflow-hidden cursor-crosshair">
         <canvas
           ref={canvasRef}
           onClick={handleCanvasClick}
@@ -281,14 +281,14 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
 
         {/* Hover Coordinate Readout */}
         {hoverFreq && (
-          <div className="absolute top-2 right-2.5 flex items-center gap-1 text-[10px] font-mono bg-[#090b0f]/90 border border-[#1e2432] px-2 py-0.5 rounded text-[#e2e8f0]">
+          <div className="absolute top-2 right-2.5 flex items-center gap-1 text-xs font-mono dsp-meter-card px-2 py-0.5 rounded-md text-[#e2e8f0]">
             <Crosshair className="w-3 h-3 text-cyan-400" />
             <span>{hoverFreq} Hz</span>
           </div>
         )}
 
         {/* Legend */}
-        <div className="absolute bottom-2 left-2.5 flex items-center gap-3 text-[10px] font-mono bg-[#090b0f]/90 px-2 py-0.5 rounded border border-[#1a1e27]">
+        <div className="absolute bottom-2 left-2.5 flex items-center gap-3 text-xs font-mono dsp-meter-card px-2 py-0.5 rounded-md">
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
             <span className="text-rose-300">Crudo (Pico)</span>
@@ -297,7 +297,7 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
             <span className="text-cyan-300">Filtrado (Muesca)</span>
           </div>
-          <span className="hidden sm:inline text-[#64748b]">• Clic en canvas para mover f₀</span>
+          <span className="hidden sm:inline text-[#94a3b8]">• Clic en canvas para mover f₀</span>
         </div>
       </div>
     </div>

@@ -101,15 +101,15 @@ export const App: React.FC = () => {
       </main>
 
       {/* Engineering Status Footer */}
-      <footer className="border-t border-[#14171f] bg-[#07080a] py-4 text-xs text-[#64748b]">
+      <footer className="border-t border-[#14171f] bg-[#07080a] py-4 text-xs text-[#94a3b8]">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            <p className="font-mono text-[11px] tracking-tight text-[#94a3b8]">
+            <p className="font-mono text-xs tracking-tight text-[#94a3b8]">
               Cálculo II • Transformada de Fourier Continua en DSP & Cancelación Quirúrgica
             </p>
           </div>
-          <p className="font-mono text-[11px] text-[#64748b]">
+          <p className="font-mono text-xs text-[#94a3b8]">
             44.1 kHz / 32-bit float • Web Audio API Core
           </p>
         </div>

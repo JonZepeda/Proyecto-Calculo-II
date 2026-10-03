@@ -39,7 +39,7 @@ export const Oscilloscope: React.FC<OscilloscopeProps> = ({ isPlaying }) => {
 
       // Draw precision oscilloscope reticle grid
       ctx.lineWidth = 1;
-      ctx.strokeStyle = '#12161f';
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
       const xSteps = 8;
       const ySteps = 6;
 
@@ -110,7 +110,7 @@ export const Oscilloscope: React.FC<OscilloscopeProps> = ({ isPlaying }) => {
 
       if (isPlaying) {
         if (viewMode === 'both' || viewMode === 'raw') {
-          drawTrace(rawData, '#d97706', 'rgba(217, 119, 6, 0.05)');
+          drawTrace(rawData, '#f59e0b', 'rgba(245, 158, 11, 0.05)');
         }
         if (viewMode === 'both' || viewMode === 'clean') {
           drawTrace(cleanData, '#06b6d4', 'rgba(6, 182, 212, 0.06)');
@@ -134,21 +134,21 @@ export const Oscilloscope: React.FC<OscilloscopeProps> = ({ isPlaying }) => {
   }, [isPlaying, viewMode, zoom]);
 
   return (
-    <div className="bg-[#0c0e14] border border-[#1a1e27] rounded-xl p-3.5 shadow-xl flex flex-col gap-3">
+    <div className="dsp-chassis rounded-lg p-3.5 flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="font-mono text-xs font-semibold text-[#f1f5f9] tracking-wider uppercase">
             Osciloscopio
           </span>
-          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[#12151d] text-[#94a3b8] border border-[#1e2432]">
+          <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-[#12151d] text-[#94a3b8] border border-[#1e2432]">
             f(t) [VOLTAJE]
           </span>
         </div>
 
         {/* View toggles & zoom */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center bg-[#090b0f] p-0.5 rounded-lg border border-[#1a1e27] text-xs font-mono">
+          <div className="flex items-center dsp-well p-0.5 rounded-md text-xs font-mono">
             <button
               onClick={() => setViewMode('both')}
               className={`px-2 py-0.5 rounded transition-colors ${
@@ -183,8 +183,8 @@ export const Oscilloscope: React.FC<OscilloscopeProps> = ({ isPlaying }) => {
 
           <button
             onClick={() => setZoom(prev => (prev === 1 ? 2 : prev === 2 ? 4 : 1))}
-            className="flex items-center gap-1 bg-[#090b0f] px-2 py-1 rounded-lg border border-[#1a1e27] text-xs font-mono text-[#94a3b8] hover:text-white"
-            title="Escala temporal"
+            className="flex items-center gap-1 dsp-well px-2 py-1 rounded-md text-xs font-mono text-[#94a3b8] hover:text-white"
+            title="Escala temporal" aria-label="Escala temporal"
           >
             <Maximize2 className="w-3 h-3 text-cyan-400" />
             <span>{zoom}x</span>
@@ -193,11 +193,11 @@ export const Oscilloscope: React.FC<OscilloscopeProps> = ({ isPlaying }) => {
       </div>
 
       {/* Recessed CRT Screen Well */}
-      <div className="relative w-full h-52 sm:h-56 rounded-lg overflow-hidden border border-[#171a22] bg-[#050608]">
+      <div className="relative w-full h-52 sm:h-56 dsp-well rounded-md overflow-hidden">
         <canvas ref={canvasRef} className="w-full h-full block" />
 
         {/* Legend Overlay */}
-        <div className="absolute top-2 left-2.5 flex items-center gap-2.5 text-[10px] font-mono bg-[#090b0f]/90 px-2 py-0.5 rounded border border-[#1a1e27]">
+        <div className="absolute top-2 left-2.5 flex items-center gap-2.5 text-xs font-mono dsp-meter-card px-2 py-0.5 rounded-md">
           {(viewMode === 'both' || viewMode === 'raw') && (
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
@@ -213,7 +213,7 @@ export const Oscilloscope: React.FC<OscilloscopeProps> = ({ isPlaying }) => {
         </div>
 
         {/* Time division label */}
-        <div className="absolute bottom-2 right-2.5 text-[10px] font-mono text-[#475569]">
+        <div className="absolute bottom-2 right-2.5 text-xs font-mono text-[#94a3b8]">
           5 ms / div
         </div>
       </div>
