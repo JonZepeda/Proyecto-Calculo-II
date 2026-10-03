@@ -431,6 +431,20 @@ export class AudioEngine {
     return this.denoiseEnabled;
   }
 
+  /** strength 0..1 -> spectral subtraction aggressiveness (0.5 = validated default alpha 3.0 / floor 0.06) */
+  public setDenoiseStrength(strength: number): void {
+    const t = Math.max(0, Math.min(1, strength));
+    this.denoiseStrength = t;
+    this.denoiser.alpha = 1.5 + t * 3.0;
+    this.denoiser.floorGain = 0.12 - t * 0.12;
+  }
+
+  public getDenoiseStrength(): number {
+    return this.denoiseStrength;
+  }
+
+  private denoiseStrength = 0.5;
+
   public setVoiceBandEnabled(on: boolean): void {
     this.voiceBandEnabled = on;
     this.applyFilterParams();

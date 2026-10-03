@@ -28,9 +28,27 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
     setVoiceBand(!voiceBand);
   };
 
+  const [strength, setStrength] = useState(audioEngine.getDenoiseStrength());
+  const isNotch = filterParams.type === 'notch';
+
+  // Sensible defaults per type: a lowpass/highpass left at the notch's 60 Hz / Q=12 either
+  // silences the voice (lowpass@60Hz) or adds a +12 dB resonance (Q is in dB for LP/HP).
+  const TYPE_DEFAULTS: Record<FilterType, { frequency: number; q: number }> = {
+    notch: { frequency: 60, q: 12 },
+    lowpass: { frequency: 3400, q: 0.7 },
+    highpass: { frequency: 100, q: 0.7 },
+    bandpass: { frequency: 1000, q: 1 },
+  };
+
   const handleTypeChange = (type: FilterType) => {
-    setFilterParams({ type });
-    audioEngine.setFilterParams({ type });
+    const next = { type, ...TYPE_DEFAULTS[type] };
+    setFilterParams(next);
+    audioEngine.setFilterParams(next);
+  };
+
+  const handleStrengthChange = (v: number) => {
+    audioEngine.setDenoiseStrength(v);
+    setStrength(v);
   };
 
   const handleFreqChange = (freq: number) => {
@@ -40,7 +58,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
   };
 
   const handleQChange = (q: number) => {
-    const clamped = Math.max(0.5, Math.min(40, q));
+    const clamped = isNotch ? Math.max(0.5, Math.min(40, q)) : Math.max(0.5, Math.min(2, q));
     setFilterParams({ q: clamped });
     audioEngine.setFilterParams({ q: clamped });
   };
@@ -125,6 +143,33 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
         ))}
       </div>
 
+      {/* Ambient-noise reduction strength */}
+      <div className="dsp-meter-card p-3 rounded-md flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <label htmlFor="denoise-strength" className="text-xs font-mono text-[#94a3b8]">
+            Intensidad de atenuación ambiental
+          </label>
+          <span className="font-mono text-sm font-bold text-emerald-400">
+            {Math.round(strength * 100)} %
+          </span>
+        </div>
+        <input
+          id="denoise-strength"
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          value={strength}
+          disabled={!denoise}
+          onChange={e => handleStrengthChange(parseFloat(e.target.value))}
+          className="w-full h-1 bg-[#1a1e27] rounded cursor-pointer disabled:opacity-40"
+        />
+        <div className="flex items-center justify-between text-xs font-mono text-[#94a3b8]">
+          <span>Voz natural</span>
+          <span>Más agresivo (puede sonar metálico)</span>
+        </div>
+      </div>
+
       {/* Main Parameters Sliders */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         
@@ -132,7 +177,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
         <div className="dsp-meter-card p-3 rounded-md flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono text-[#94a3b8]">
-              Frecuencia Notch (f₀)
+              {isNotch ? 'Frecuencia Notch (f₀)' : 'Frecuencia de corte (fc)'}
             </span>
             <span className="font-mono text-sm font-bold text-cyan-400">
               {filterParams.frequency} <span className="text-xs text-[#94a3b8]">Hz</span>
@@ -210,20 +255,30 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
 
           <input
             type="range"
-            min="1"
-            max="35"
-            step="0.5"
+            min={isNotch ? '1' : '0.5'}
+            max={isNotch ? '35' : '2'}
+            step={isNotch ? '0.5' : '0.1'}
             value={filterParams.q}
             onChange={e => handleQChange(parseFloat(e.target.value))}
             className="w-full h-1 bg-[#1a1e27] rounded cursor-pointer"
           />
 
           <div className="flex items-center justify-between pt-1 text-xs font-mono text-[#94a3b8]">
-            <span>Ancho (Q=1)</span>
-            <span className="text-[#94a3b8]">
-              Δf ≈ {(filterParams.frequency / filterParams.q).toFixed(1)} Hz
-            </span>
-            <span>Estrecho (Q=35)</span>
+            {isNotch ? (
+              <>
+                <span>Ancho (Q=1)</span>
+                <span className="text-[#94a3b8]">
+                  Δf ≈ {(filterParams.frequency / filterParams.q).toFixed(1)} Hz
+                </span>
+                <span>Estrecho (Q=35)</span>
+              </>
+            ) : (
+              <>
+                <span>Suave (0.5)</span>
+                <span className="text-[#94a3b8]">0.7 = sin resonancia</span>
+                <span>Resonante (2)</span>
+              </>
+            )}
           </div>
         </div>
 
