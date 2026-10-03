@@ -5,7 +5,7 @@ import {
   generateSyntheticWindow,
   sweepRiemannSpectrum,
 } from '../dsp/riemannFourier';
-import { Sparkles, CheckCircle2, AlertCircle, ArrowRight, HelpCircle } from 'lucide-react';
+import { Sigma, CheckCircle2, AlertCircle, ArrowRight, HelpCircle } from 'lucide-react';
 
 export const MathLab: React.FC = () => {
   const [probeFreq, setProbeFreq] = useState<number>(60);
@@ -224,31 +224,31 @@ export const MathLab: React.FC = () => {
   const isResonance = Math.abs(probeFreq - noiseFreq) < 5 || probeFreq === 140 || probeFreq === 700;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       
       {/* Introduction Card */}
-      <div className="bg-neutral-900/70 border border-neutral-800/80 rounded-2xl p-5 shadow-xl">
+      <div className="bg-[#0c0e14] border border-[#1a1e27] rounded-xl p-4 shadow-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs uppercase font-bold text-cyan-400 tracking-wider">
                 Demostración Didáctica de Cálculo Integral
               </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800/50">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#12151d] text-[#94a3b8] border border-[#1e2330]">
                 Sumas de Riemann & Ortogonalidad
               </span>
             </div>
-            <h2 className="text-xl font-bold text-neutral-100 mt-1">
+            <h2 className="text-lg font-bold text-white mt-1">
               ¿Cómo calcula la Integral de Fourier el Espectro de Frecuencias?
             </h2>
-            <p className="text-sm text-neutral-400 mt-1 leading-relaxed">
+            <p className="text-xs text-[#94a3b8] mt-1 leading-relaxed">
               La integral continua de Fourier evalúa la correlación de la señal física <code className="text-amber-300 font-mono">f(t)</code> multiplicándola por una base armónica oscilatoria <code className="text-cyan-300 font-mono">cos(2πξt)</code> y midiendo el <strong>área neta acumulada bajo la curva</strong> mediante sumas de rectángulos de Riemann.
             </p>
           </div>
         </div>
 
         {/* Formula Banner */}
-        <div className="mt-4 bg-neutral-950 p-4 rounded-xl border border-neutral-800 overflow-x-auto text-center">
+        <div className="mt-3 bg-[#08090d] p-3 rounded-lg border border-[#171a22] overflow-x-auto text-center">
           <div
             dangerouslySetInnerHTML={renderFormula(
               `\\hat{f}(\\xi) = \\int_{-\\infty}^{\\infty} f(t) e^{-i 2\\pi \\xi t} \\, dt = \\underbrace{\\int_{-\\infty}^{\\infty} f(t) \\cos(2\\pi \\xi t) \\, dt}_{I_{\\text{cos}}(\\xi)} - i \\underbrace{\\int_{-\\infty}^{\\infty} f(t) \\sin(2\\pi \\xi t) \\, dt}_{I_{\\text{sin}}(\\xi)}`
@@ -258,23 +258,23 @@ export const MathLab: React.FC = () => {
       </div>
 
       {/* Interactive Controls & Canvas */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         
         {/* Left Column: Interactive Controls */}
-        <div className="bg-neutral-900/70 border border-neutral-800/80 rounded-2xl p-5 shadow-xl flex flex-col gap-4">
-          <h3 className="font-bold text-sm text-neutral-100 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-cyan-400" />
+        <div className="bg-[#0c0e14] border border-[#1a1e27] rounded-xl p-4 shadow-xl flex flex-col gap-3">
+          <h3 className="font-mono font-bold text-xs text-white uppercase tracking-wider flex items-center gap-2">
+            <Sigma className="w-3.5 h-3.5 text-cyan-400" />
             <span>Parámetros de Integración</span>
           </h3>
 
           {/* Probe frequency slider */}
-          <div className="bg-neutral-950 p-3.5 rounded-xl border border-neutral-800 flex flex-col gap-2">
+          <div className="bg-[#090b0f] p-3 rounded-lg border border-[#171a22] flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-neutral-300">
-                Frecuencia de Prueba de la Integral (ξ)
+              <label className="text-[11px] font-mono text-[#94a3b8]">
+                Frecuencia de Prueba (ξ)
               </label>
-              <span className="font-mono text-base font-bold text-cyan-400">
-                {probeFreq} <span className="text-xs text-neutral-400">Hz</span>
+              <span className="font-mono text-sm font-bold text-cyan-400">
+                {probeFreq} <span className="text-[10px] text-[#64748b]">Hz</span>
               </span>
             </div>
 
@@ -334,27 +334,27 @@ export const MathLab: React.FC = () => {
           </div>
 
           {/* Numerical Integration Result */}
-          <div className="bg-neutral-950 p-4 rounded-xl border border-neutral-800 flex flex-col gap-2.5">
-            <span className="text-xs font-mono text-neutral-400 uppercase font-bold">
+          <div className="bg-[#090b0f] p-3 rounded-lg border border-[#171a22] flex flex-col gap-2">
+            <span className="text-[10px] font-mono text-[#64748b] uppercase font-semibold">
               Resultado Numérico de la Integral
             </span>
 
             <div className="space-y-1 text-xs font-mono">
-              <div className="flex justify-between py-1 border-b border-neutral-900">
-                <span className="text-neutral-400">Parte Real ∫ f(t)cos(ωt)dt:</span>
+              <div className="flex justify-between py-1 border-b border-[#141720]">
+                <span className="text-[#858e9f]">Parte Real ∫ f(t)cos(ωt)dt:</span>
                 <span className="font-bold text-emerald-400">
                   {riemannResult.totalAreaCos.toFixed(4)}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-neutral-900">
-                <span className="text-neutral-400">Parte Imag -∫ f(t)sin(ωt)dt:</span>
+              <div className="flex justify-between py-1 border-b border-[#141720]">
+                <span className="text-[#858e9f]">Parte Imag -∫ f(t)sin(ωt)dt:</span>
                 <span className="font-bold text-cyan-400">
                   {(-riemannResult.totalAreaSin).toFixed(4)}
                 </span>
               </div>
-              <div className="flex justify-between py-1 pt-2 font-bold text-sm">
-                <span className="text-neutral-200">Magnitud |f̂(ξ)|:</span>
-                <span className={isResonance ? 'text-rose-400' : 'text-neutral-400'}>
+              <div className="flex justify-between py-1 pt-1 font-bold text-xs">
+                <span className="text-[#f1f5f9]">Magnitud |f̂(ξ)|:</span>
+                <span className={isResonance ? 'text-rose-400' : 'text-[#64748b]'}>
                   {riemannResult.magnitude.toFixed(4)}
                 </span>
               </div>
@@ -362,24 +362,24 @@ export const MathLab: React.FC = () => {
 
             {/* Diagnostic Interpretation */}
             <div
-              className={`mt-2 p-2.5 rounded-lg border text-xs leading-relaxed flex items-start gap-2 ${
+              className={`mt-1 p-2 rounded border text-[11px] font-mono leading-relaxed flex items-start gap-2 ${
                 isResonance
-                  ? 'bg-rose-950/40 border-rose-800/60 text-rose-200'
-                  : 'bg-cyan-950/40 border-cyan-800/60 text-cyan-200'
+                  ? 'bg-[#1c0f13] border-[#471822] text-rose-200'
+                  : 'bg-[#0e171f] border-[#18394f] text-cyan-200'
               }`}
             >
               {isResonance ? (
                 <>
-                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0 mt-0.5" />
                   <div>
-                    <strong>¡Sintonía / Componente Presente!</strong> Las oscilaciones están en fase, el integrando es predominantemente positivo y el área bajo la curva no se cancela.
+                    <strong>Sintonía:</strong> Oscilaciones en fase, integrando predominantemente positivo; área neta acumulada ≠ 0.
                   </div>
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Ortogonalidad Cumplida:</strong> Las áreas positivas (verdes) y negativas (rojas) se anulan exactamente entre sí. Área neta ≈ 0.
+                    <strong>Ortogonalidad:</strong> Áreas positivas y negativas se cancelan mutuamente; área neta ≈ 0.
                   </div>
                 </>
               )}
@@ -387,11 +387,11 @@ export const MathLab: React.FC = () => {
           </div>
 
           {/* Full Riemann Spectrum Sweep Preview */}
-          <div className="bg-neutral-950 p-3 rounded-xl border border-neutral-800">
-            <span className="text-[11px] font-mono text-neutral-400 block mb-1">
-              Espectro Completo por Sumas de Riemann (20 - 1500 Hz):
+          <div className="bg-[#090b0f] p-3 rounded-lg border border-[#171a22]">
+            <span className="text-[10px] font-mono text-[#64748b] block mb-1">
+              Barrido Riemann (20 - 1500 Hz):
             </span>
-            <div className="w-full h-24 rounded-lg overflow-hidden border border-neutral-900 bg-neutral-950">
+            <div className="w-full h-24 rounded overflow-hidden border border-[#141720] bg-[#050608]">
               <canvas
                 ref={spectrumCanvasRef}
                 width={300}
@@ -404,17 +404,17 @@ export const MathLab: React.FC = () => {
         </div>
 
         {/* Center & Right Columns: 3-Stage Canvas Visualizer */}
-        <div className="lg:col-span-2 bg-neutral-900/70 border border-neutral-800/80 rounded-2xl p-5 shadow-xl flex flex-col gap-3">
+        <div className="lg:col-span-2 bg-[#0c0e14] border border-[#1a1e27] rounded-xl p-4 shadow-xl flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-sm text-neutral-100 flex items-center gap-2">
-              <span>Desglose Gráfico de la Integral de Riemann</span>
+            <h3 className="font-mono font-bold text-xs text-white uppercase tracking-wider">
+              Desglose Gráfico de la Integral de Riemann
             </h3>
-            <span className="text-xs font-mono text-neutral-400">
-              Ventana de Análisis: 40 ms (N = 300 rectángulos)
+            <span className="text-[10px] font-mono text-[#64748b]">
+              Ventana: 40 ms (N = 300 rectángulos)
             </span>
           </div>
 
-          <div className="relative w-full h-[460px] rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950">
+          <div className="relative w-full h-[460px] rounded-lg overflow-hidden border border-[#171a22] bg-[#050608]">
             <canvas
               ref={canvasRef}
               width={750}
@@ -423,18 +423,15 @@ export const MathLab: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-2 text-[11px] font-mono text-center pt-1 text-neutral-400">
-            <div className="bg-neutral-950 p-2 rounded-lg border border-neutral-900">
-              <span className="text-amber-400 font-bold">1. Multiplicación:</span><br/>
-              f(t) • cos(2πξt)
+          <div className="grid grid-cols-3 gap-2 text-[10px] font-mono text-center pt-1 text-[#64748b]">
+            <div className="bg-[#090b0f] p-1.5 rounded border border-[#151922]">
+              <span className="text-amber-400 font-bold">1. Producto:</span> f(t) • cos(2πξt)
             </div>
-            <div className="bg-neutral-950 p-2 rounded-lg border border-neutral-900">
-              <span className="text-purple-400 font-bold">2. Partición:</span><br/>
-              Δt = 1 / 44,100 s
+            <div className="bg-[#090b0f] p-1.5 rounded border border-[#151922]">
+              <span className="text-cyan-400 font-bold">2. Partición:</span> Δt = 1/44.1 kHz
             </div>
-            <div className="bg-neutral-950 p-2 rounded-lg border border-neutral-900">
-              <span className="text-emerald-400 font-bold">3. Área Neta:</span><br/>
-              ∫ = ∑ g(tₙ) Δt
+            <div className="bg-[#090b0f] p-1.5 rounded border border-[#151922]">
+              <span className="text-emerald-400 font-bold">3. Integral:</span> ∫ ≈ ∑ g(tₙ)Δt
             </div>
           </div>
         </div>
@@ -442,53 +439,53 @@ export const MathLab: React.FC = () => {
       </div>
 
       {/* 4 Theoretical Cornerstones Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
         
-        <div className="bg-neutral-900/50 border border-neutral-800/80 p-4 rounded-xl flex flex-col gap-2">
-          <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">
+        <div className="bg-[#0c0e14] border border-[#1a1e27] p-3.5 rounded-lg flex flex-col gap-1.5">
+          <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider font-mono">
             1. Integral Impropia
           </span>
-          <h4 className="font-semibold text-sm text-neutral-200">
+          <h4 className="font-semibold text-xs text-[#e2e8f0]">
             Convergencia en L²(ℝ)
           </h4>
-          <p className="text-xs text-neutral-400 leading-relaxed">
-            La transformada existe para toda señal de energía finita, evaluando el límite cuando el horizonte temporal tiende al infinito simétricamente.
+          <p className="text-[11px] text-[#858e9f] leading-relaxed">
+            La transformada existe para toda señal de energía finita, evaluando el límite simétrico cuando el horizonte temporal tiende a infinito.
           </p>
         </div>
 
-        <div className="bg-neutral-900/50 border border-neutral-800/80 p-4 rounded-xl flex flex-col gap-2">
-          <span className="text-xs font-bold text-purple-400 uppercase tracking-wider font-mono">
+        <div className="bg-[#0c0e14] border border-[#1a1e27] p-3.5 rounded-lg flex flex-col gap-1.5">
+          <span className="text-[10px] font-bold text-violet-400 uppercase tracking-wider font-mono">
             2. Ortogonalidad
           </span>
-          <h4 className="font-semibold text-sm text-neutral-200">
+          <h4 className="font-semibold text-xs text-[#e2e8f0]">
             Base Armónica Trigonométrica
           </h4>
-          <p className="text-xs text-neutral-400 leading-relaxed">
-            La integral de dos frecuencias distintas sobre un periodo es cero. Por ello, la integral de Fourier solo arroja valor no nulo en las frecuencias contenidas.
+          <p className="text-[11px] text-[#858e9f] leading-relaxed">
+            La integral de dos frecuencias distintas sobre un periodo es cero. Por ello, la integral solo arroja valor no nulo en las componentes existentes.
           </p>
         </div>
 
-        <div className="bg-neutral-900/50 border border-neutral-800/80 p-4 rounded-xl flex flex-col gap-2">
-          <span className="text-xs font-bold text-amber-400 uppercase tracking-wider font-mono">
+        <div className="bg-[#0c0e14] border border-[#1a1e27] p-3.5 rounded-lg flex flex-col gap-1.5">
+          <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider font-mono">
             3. Convolución
           </span>
-          <h4 className="font-semibold text-sm text-neutral-200">
+          <h4 className="font-semibold text-xs text-[#e2e8f0]">
             De Integral a Producto
           </h4>
-          <p className="text-xs text-neutral-400 leading-relaxed">
-            La integral de convolución en el tiempo (f * h)(t) se transforma en una simple multiplicación espectral F(ξ) • H(ξ), permitiendo filtros en tiempo real.
+          <p className="text-[11px] text-[#858e9f] leading-relaxed">
+            La integral de convolución en el tiempo (f * h)(t) se transforma en una multiplicación espectral F(ξ) • H(ξ), permitiendo filtrado a 60 FPS.
           </p>
         </div>
 
-        <div className="bg-neutral-900/50 border border-neutral-800/80 p-4 rounded-xl flex flex-col gap-2">
-          <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider font-mono">
+        <div className="bg-[#0c0e14] border border-[#1a1e27] p-3.5 rounded-lg flex flex-col gap-1.5">
+          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider font-mono">
             4. Parseval
           </span>
-          <h4 className="font-semibold text-sm text-neutral-200">
+          <h4 className="font-semibold text-xs text-[#e2e8f0]">
             Conservación de Energía
           </h4>
-          <p className="text-xs text-neutral-400 leading-relaxed">
-            La integral del cuadrado de la amplitud temporal es igual a la integral de la densidad espectral. Anular una muesca no destruye la energía de la voz.
+          <p className="text-[11px] text-[#858e9f] leading-relaxed">
+            La integral del cuadrado de la amplitud temporal equivale a la integral de la densidad espectral. Anular una muesca no degrada la inteligibilidad.
           </p>
         </div>
 

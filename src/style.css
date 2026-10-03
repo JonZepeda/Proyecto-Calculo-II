@@ -70,3 +70,16 @@ input[type="range"] {
   overflow-y: hidden;
   padding: 0.25em 0;
 }
+
+/* Keyboard focus: visible on every interactive control (WCAG 2.4.7) */
+:where(button, a, input, select, textarea, [role="tab"], [tabindex]):focus-visible {
+  outline: 1px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

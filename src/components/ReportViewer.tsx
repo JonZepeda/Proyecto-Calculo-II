@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, Printer, BookOpen, ShieldCheck, Download } from 'lucide-react';
+import { Copy, Check, Printer, BookOpen } from 'lucide-react';
 
 interface ReportViewerProps {
   informeMarkdown: string;
@@ -26,41 +26,41 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({
   };
 
   return (
-    <div className="bg-neutral-900/70 border border-neutral-800/80 rounded-2xl p-6 shadow-xl space-y-6">
+    <div className="bg-[#0c0e14] border border-[#1a1e27] rounded-xl p-5 shadow-xl space-y-4">
       
       {/* Top Header and Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-800 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#171a22] pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-cyan-400" />
-            <h2 className="text-lg font-bold text-neutral-100">
+            <BookOpen className="w-4 h-4 text-cyan-400" />
+            <h2 className="text-base font-bold text-white tracking-tight">
               Documentación Académica del Proyecto
             </h2>
           </div>
-          <p className="text-xs text-neutral-400 mt-0.5">
-            Documentos formales listos para entrega y preparación de la defensa oral en Cálculo II
+          <p className="text-xs text-[#858e9f] mt-0.5">
+            Marco formal para entrega universitaria y banco de preguntas de defensa oral en Cálculo II
           </p>
         </div>
 
         {/* Tab switch and Action buttons */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center bg-neutral-950 p-1 rounded-xl border border-neutral-800 text-xs">
+          <div className="flex items-center bg-[#090b0f] p-0.5 rounded-lg border border-[#1a1e27] text-xs font-mono">
             <button
               onClick={() => setSubTab('informe')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+              className={`px-3 py-1 rounded transition-colors ${
                 subTab === 'informe'
-                  ? 'bg-cyan-500 text-neutral-950 font-semibold shadow-sm'
-                  : 'text-neutral-400 hover:text-neutral-200'
+                  ? 'bg-[#181c25] text-white border border-[#262c3a] shadow-sm font-semibold'
+                  : 'text-[#858e9f] hover:text-[#d1d5db]'
               }`}
             >
               Informe Formal
             </button>
             <button
               onClick={() => setSubTab('defensa')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+              className={`px-3 py-1 rounded transition-colors ${
                 subTab === 'defensa'
-                  ? 'bg-cyan-500 text-neutral-950 font-semibold shadow-sm'
-                  : 'text-neutral-400 hover:text-neutral-200'
+                  ? 'bg-[#181c25] text-white border border-[#262c3a] shadow-sm font-semibold'
+                  : 'text-[#858e9f] hover:text-[#d1d5db]'
               }`}
             >
               Guía de Defensa Oral
@@ -69,27 +69,27 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({
 
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 px-3 py-1.5 rounded-xl text-xs font-medium text-neutral-300 transition-all"
+            className="flex items-center gap-1.5 bg-[#090b0f] hover:bg-[#141822] border border-[#1a1e27] px-2.5 py-1 rounded-lg text-xs font-mono text-[#858e9f] hover:text-white transition-colors"
             title="Copiar texto en Markdown al portapapeles"
           >
-            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
             <span>{copied ? 'Copiado' : 'Copiar'}</span>
           </button>
 
           <button
             onClick={handlePrint}
-            className="flex items-center gap-1.5 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 px-3 py-1.5 rounded-xl text-xs font-medium text-neutral-300 transition-all"
-            title="Imprimir o guardar como PDF"
+            className="flex items-center gap-1.5 bg-[#090b0f] hover:bg-[#141822] border border-[#1a1e27] px-2.5 py-1 rounded-lg text-xs font-mono text-[#858e9f] hover:text-white transition-colors"
+            title="Imprimir o exportar PDF"
           >
-            <Printer className="w-4 h-4 text-cyan-400" />
+            <Printer className="w-3.5 h-3.5 text-cyan-400" />
             <span>PDF</span>
           </button>
         </div>
       </div>
 
-      {/* Report Content Container */}
-      <div className="bg-neutral-950 p-6 sm:p-8 rounded-xl border border-neutral-800/80 text-neutral-200 font-sans leading-relaxed text-sm max-w-none overflow-x-auto selection:bg-cyan-500/20">
-        <pre className="whitespace-pre-wrap font-sans text-sm text-neutral-300 leading-relaxed">
+      {/* Report Document Well */}
+      <div className="bg-[#050608] p-5 sm:p-7 rounded-lg border border-[#171a22] text-[#d1d5db] font-sans leading-relaxed text-xs sm:text-sm max-w-none overflow-x-auto selection:bg-cyan-500/20">
+        <pre className="whitespace-pre-wrap font-sans text-xs sm:text-sm text-[#cbd5e1] leading-relaxed">
           {activeContent}
         </pre>
       </div>

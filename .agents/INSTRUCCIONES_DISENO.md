@@ -45,3 +45,32 @@ Anota al final de este archivo qué componentes tocaste y qué quedó pendiente.
 ---
 ### Registro de Antigravity
 (vacío)
+
+---
+### Revisión de Claude Code — pasada 1 (MathLab.tsx y ReportViewer.tsx)
+Bien: `Sparkles` → `Sigma`, menos espaciado, `font-mono` en etiquetas.
+Corregir:
+1. Siguen `rounded-xl` y `shadow-xl` en los paneles. Usa `dsp-chassis rounded-lg` (sin `shadow-xl`).
+2. Usas colores hex sueltos (`bg-[#0c0e14]`, `border-[#1a1e27]`, `bg-[#090b0f]`...). Usa las clases `dsp-chassis`, `dsp-well`,
+   `dsp-meter-card` de `style.css` para que haya una sola fuente de verdad.
+3. `text-[10px]` y `text-[11px]` en texto útil son muy pequeños; mínimo `text-xs` (12px) para etiquetas y 14px para texto de lectura.
+4. `bg-neutral-950 ... rounded-xl` en los bloques de fórmula → `dsp-well rounded-lg`.
+Estado: no uses el modo "aceptar todo" a ciegas; los componentes AudioControls, SpectrumAnalyzer, ABCompare, Oscilloscope,
+Spectrogram, FilterControls y Navbar siguen pendientes. Hay un commit base (`ed8b7a3`): `git diff` muestra todo lo que cambias.
+
+---
+### Revisión de Claude Code — pasada 2 (estado final reportado como terminado)
+Verificado: `tsc`, `validate-dsp.mjs` y `vite build` pasan; `src/dsp`, `scripts`, `package.json`, `vercel.json` intactos;
+`Sparkles` y `animate-pulse` eliminados; los 3 botones de FilterControls conservan `aria-pressed` y handlers.
+NO está terminado (la búsqueda de patrones prohibidos no da 0):
+1. 10 paneles siguen con `rounded-xl shadow-xl` (ABCompare:42, AudioControls:73, FilterControls:53, MathLab:230/264/407,
+   Oscilloscope:137, ReportViewer:29, Spectrogram:72, SpectrumAnalyzer:228). Cambia a `dsp-chassis rounded-lg`, sin `shadow-xl`.
+2. Los tokens `dsp-chassis`/`dsp-well`/`dsp-meter-card` siguen sin usarse en ningún componente (0 usos) y hay 232 colores hex
+   sueltos (`bg-[#...]`, `border-[#...]`). Sustituye los repetidos (`#0c0e14`, `#1a1e27`, `#090b0f`, `#171a22`) por los tokens.
+3. 51 textos con `text-[9px]/[10px]/[11px]`. Mínimo `text-xs` (12px). Valores numéricos y etiquetas importantes: `text-xs`/`text-sm`.
+4. Accesibilidad: no hay ningún estilo de foco (`focus-visible:`) en botones, sliders ni pestañas. Agrega, por ejemplo,
+   `focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#38bdf8]` (o una regla global en style.css).
+   Revisa el contraste de `#64748b` sobre `#0c0e14` (~4:1, bajo el mínimo 4.5:1); usa `#94a3b8` para texto útil.
+5. Navbar.tsx: `shadow-inner`, `shadow-sm` y `text-[10px]/[11px]`; mismas correcciones.
+6. Rellena el "Registro de Antigravity" (sigue vacío) con lo que tocaste y lo que dejaste pendiente.
+Cuando termines, corre la búsqueda: `grep -rnE "rounded-xl|rounded-2xl|shadow-(xl|lg|inner)|text-\[(9|10|11)px\]" src` debe dar 0.
