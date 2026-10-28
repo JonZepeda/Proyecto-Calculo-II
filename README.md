@@ -13,31 +13,51 @@ Este proyecto aborda y resuelve el problema de la **"ceguera en el dominio del t
 Utilizando la **Transformada de Fourier**, modelada como una integral impropia en el plano complejo:
 $$\hat{f}(\xi) = \int_{-\infty}^{\infty} f(t) e^{-i 2\pi \xi t} \, dt = \int_{-\infty}^{\infty} f(t) \cos(2\pi \xi t) \, dt - i \int_{-\infty}^{\infty} f(t) \sin(2\pi \xi t) \, dt$$
 
-La señal se proyecta sobre una base ortogonal de funciones armónicas, convirtiendo la convolución en el tiempo en un producto algebraico simple en frecuencia. El sistema aísla la interferencia con un filtro de muesca (*Notch Filter*) y reconstruye la señal limpia con más de **-34 dB de atenuación** y **> 98% de reducción de potencia del ruido**, preservando la inteligibilidad de la voz.
+La señal se proyecta sobre una base ortogonal de funciones armónicas, convirtiendo la convolución en el tiempo en un producto algebraico simple en frecuencia. El sistema aísla la interferencia con un filtro de muesca (*Notch Filter*), un filtro de banda de voz y una resta espectral para el ruido de fondo.
+
+**Resultados medidos** (`npm run test:dsp`, voz sintética con ruido rosa): mejora de 4 a 6 dB en la relación señal/ruido y la voz casi no se afecta (−0,3 a −2,3 dB). Con un tono puro de 60 Hz el filtro de muesca atenúa mucho más, pero esa cifra es de un caso ideal y no de ruido ambiente real. **No se ha probado con grabaciones reales de micrófono**, y un filtro fijo no separa la voz de ruido que ocupa las mismas frecuencias (otra voz, música).
 
 ---
 
 ## 🚀 Inicio Rápido (Local)
 
 ### Requisitos Previos
-- Node.js 18+ instalado.
+- **Node.js 20.19 o superior** (o 22.12+). Vite 8 no funciona con Node 18. Comprueba con `node --version`.
+- Python 3.10+ solo si quieres el motor opcional (ver más abajo).
 
 ### Instalación y Ejecución
 ```bash
-# 1. Instalar dependencias
+# 1. Clonar e instalar dependencias
+git clone https://github.com/JonZepeda/Proyecto-Calculo-II.git
+cd Proyecto-Calculo-II
 npm install
 
 # 2. Iniciar servidor de desarrollo local
 npm run dev
 ```
 
-Abre [http://localhost:5173](http://localhost:5173) en tu navegador (Google Chrome o Edge recomendados).
+Abre [http://localhost:5173](http://localhost:5173) en tu navegador (Google Chrome o Edge recomendados). El micrófono solo funciona en `localhost` o con HTTPS.
 
-### Compilación para Producción (Vercel / GitHub Pages)
+Con esto basta para el Laboratorio DSP y Fundamento Matemático: todo se calcula en el navegador.
+
+### Comandos útiles
 ```bash
-npm run build
+npm run test:dsp   # prueba de regresión del filtro y de la integración numérica
+npm run build      # compila para producción en dist/ (Vercel, Netlify, GitHub Pages)
 ```
-La carpeta generada `dist/` está lista para subirse con 1 clic a **Vercel**, **Netlify** o **GitHub Pages**.
+
+### Motor Python (opcional)
+Añade la exportación de WAV con SciPy y la verificación simbólica con SymPy. Sin él, la app usa el cálculo del navegador y funciona igual.
+```bash
+python -m venv python_engine/.venv
+# Windows:    python_engine\.venv\Scripts\activate
+# Mac/Linux:  source python_engine/.venv/bin/activate
+pip install -r requirements.txt
+python python_engine/server.py     # escucha en http://127.0.0.1:8000
+```
+Déjalo corriendo en una segunda terminal junto a `npm run dev`; Vite redirige `/api` a ese puerto. El notebook `python_engine/demostracion_calculo_ii.ipynb` repite las demostraciones con SymPy.
+
+> Al publicar en Vercel solo se despliega la parte estática: el motor Python no se incluye y la app cae sola al cálculo del navegador.
 
 ---
 
@@ -47,17 +67,17 @@ La carpeta generada `dist/` está lista para subirse con 1 clic a **Vercel**, **
    - **Osciloscopio**: Doble traza continua $f(t)$ a 60 FPS (Señal Original vs. Señal Filtrada).
    - **Analizador Espectral**: Gráfica $|\hat{f}(\xi)|$ de 20 Hz a 20 kHz con cursor interactivo para mover la frecuencia de muesca directamente en el gráfico.
    - **Espectrograma en Cascada (Waterfall)**: Mapa de calor en 2D (Tiempo vs. Frecuencia vs. Energía) donde se observa la línea de ruido desaparecer al activar el filtro.
-   - **Conmutador Táctil A / B**: Alternancia instantánea con latencia cero entre el audio original con ruido y el audio limpio.
+   - **Conmutador A / B**: Alterna entre el audio original con ruido y el audio filtrado (con una transición corta de unos 20 ms).
    - **Detección Automática de Ruido**: Algoritmo que escanea el espectro y sintoniza el filtro automáticamente sobre el pico armónico parásito.
 
-2. **📐 Fundamentación Matemática (Cálculo II)**:
-   - Demostración visual de cómo las **Sumas de Riemann** aproximan la integral continua de Fourier.
-   - Gráfica interactiva de área positiva/negativa bajo la curva de $f(t)\cdot\cos(\omega t)$ demostrando empíricamente la **propiedad de ortogonalidad**.
-   - Explicación formal del Teorema de Convolución y el Teorema de Parseval.
+2. **📐 Fundamento Matemático (Cálculo II)**:
+   - Una idea central: la integral multiplica la señal por una onda de prueba y suma el resultado; es grande si la frecuencia está en la señal y casi cero si no.
+   - Gráficas interactivas del producto $f(t)\cdot\cos(\omega t)$ y del área acumulada, con el cálculo por **Riemann, trapecio y Simpson** frente al valor exacto.
+   - Demostración paso a paso (plegada): producto a suma, integración por partes e integral impropia.
 
-3. **📑 Documentación Académica Integrada**:
-   - `docs/informe_calculo_ii.md`: Informe formal universitario completo con introducción, marco teórico, metodología, resultados experimentales y bibliografía.
-   - `docs/guia_defensa.md`: Banco de preguntas y respuestas clave para la evaluación oral con el catedrático.
+3. **📑 Documentación Académica** (archivos en `docs/`, no se muestran dentro de la app):
+   - `docs/informe_calculo_ii.md`: informe con introducción, marco teórico, metodología y bibliografía. **Las cifras de atenuación del informe son de un caso ideal y aún no están actualizadas con las mediciones de arriba.**
+   - `docs/guia_defensa.md`: banco de preguntas y respuestas para la evaluación oral.
 
 ---
 
@@ -75,9 +95,8 @@ La carpeta generada `dist/` está lista para subirse con 1 clic a **Vercel**, **
 │   │   ├── SpectrumAnalyzer.tsx    # Canvas 60 FPS del espectro |f̂(ξ)|
 │   │   ├── Spectrogram.tsx         # Espectrograma en cascada 2D
 │   │   ├── FilterControls.tsx      # Controles de f₀, factor Q y tipo de filtro
-│   │   ├── ABCompare.tsx           # Botón táctil A/B y métricas de atenuación
-│   │   ├── MathLab.tsx             # Laboratorio interactivo de Sumas de Riemann
-│   │   └── ReportViewer.tsx        # Lector del informe con exportación a PDF
+│   │   ├── ABCompare.tsx           # Conmutador A/B y métricas medidas
+│   │   └── MathLab.tsx             # Laboratorio interactivo de Riemann/trapecio/Simpson
 │   ├── dsp/
 │   │   ├── audioEngine.ts          # Pipeline Web Audio API y ruteo A/B
 │   │   ├── riemannFourier.ts       # Cálculo numérico explícito de la integral
@@ -85,6 +104,9 @@ La carpeta generada `dist/` está lista para subirse con 1 clic a **Vercel**, **
 │   ├── App.tsx                     # Componente principal
 │   ├── main.tsx                    # Punto de entrada
 │   └── style.css                   # Tailwind CSS v4 y tema All-Black
+├── python_engine/                  # Motor opcional (FastAPI + SymPy/SciPy) y notebook
+├── scripts/validate-dsp.mjs        # Prueba de regresión (npm run test:dsp)
+├── requirements.txt                # Dependencias del motor Python
 ├── index.html                      # Documento raíz con KaTeX y tipografía JetBrains Mono
 ├── package.json
 └── vite.config.ts
