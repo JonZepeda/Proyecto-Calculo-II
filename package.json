@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start:python": "python_engine\\.venv\\Scripts\\python.exe python_engine\\server.py",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test:dsp": "node --experimental-strip-types scripts/validate-dsp.mjs"

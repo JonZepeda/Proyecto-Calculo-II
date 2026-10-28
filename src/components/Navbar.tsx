@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Activity, Sigma, FileText, Volume2, VolumeX } from 'lucide-react';
+import { Activity, Sigma, Volume2, VolumeX } from 'lucide-react';
 import { audioEngine } from '../dsp/audioEngine';
 
 interface NavbarProps {
-  activeTab: 'lab' | 'math' | 'report';
-  setActiveTab: (tab: 'lab' | 'math' | 'report') => void;
+  activeTab: 'lab' | 'math';
+  setActiveTab: (tab: 'lab' | 'math') => void;
   outputMode: 'raw' | 'clean' | 'mute';
 }
 
@@ -52,7 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, outputM
                 CÁLCULO II
               </span>
             </div>
-            <p className="text-xs font-mono text-[#94a3b8] hidden sm:block">
+            <p className="text-xs font-mono text-[#94a3b8] hidden xl:block whitespace-nowrap">
               Recuperación Espectral Quirúrgica en Tiempo Real
             </p>
           </div>
@@ -62,7 +62,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, outputM
         <nav role="tablist" aria-label="Secciones" className="flex items-center gap-1 dsp-well p-1 rounded-md">
           <button
             role="tab" aria-selected={activeTab === 'lab'} onClick={() => setActiveTab('lab')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium whitespace-nowrap transition-colors ${
               activeTab === 'lab'
                 ? 'bg-[#181c25] text-white border border-[#262c3a]'
                 : 'text-[#858e9f] hover:text-[#e2e8f0] hover:bg-[#12151d]'
@@ -74,7 +74,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, outputM
 
           <button
             role="tab" aria-selected={activeTab === 'math'} onClick={() => setActiveTab('math')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium whitespace-nowrap transition-colors ${
               activeTab === 'math'
                 ? 'bg-[#181c25] text-white border border-[#262c3a]'
                 : 'text-[#858e9f] hover:text-[#e2e8f0] hover:bg-[#12151d]'
@@ -83,23 +83,11 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, outputM
             <Sigma className="w-3.5 h-3.5 text-amber-400" />
             <span>Fundamento Matemático</span>
           </button>
-
-          <button
-            role="tab" aria-selected={activeTab === 'report'} onClick={() => setActiveTab('report')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors ${
-              activeTab === 'report'
-                ? 'bg-[#181c25] text-white border border-[#262c3a]'
-                : 'text-[#858e9f] hover:text-[#e2e8f0] hover:bg-[#12151d]'
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5 text-slate-300" />
-            <span>Informe & Defensa</span>
-          </button>
         </nav>
 
         {/* Right: Master Clock & Hardware Level Fader */}
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2.5 text-xs font-mono text-[#94a3b8]">
+          <div className="hidden sm:flex items-center gap-2.5 text-xs font-mono text-[#94a3b8] whitespace-nowrap">
             <span className="flex items-center gap-1.5 text-[#94a3b8]">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
               {fps} FPS

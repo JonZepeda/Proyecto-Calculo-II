@@ -198,30 +198,8 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
   }, [filterParams.frequency, isLogScale]);
 
   const handleAutoDetect = () => {
-    const rawFreq = audioEngine.getRawFrequency();
-    const sampleRate = audioEngine.getSampleRate();
-    const nyquist = sampleRate / 2;
-    const binCount = rawFreq.length;
-
-    let peakMag = 0;
-    let peakBin = -1;
-
-    // Scan for stationary tone peak above 30 Hz
-    for (let i = 2; i < binCount; i++) {
-      const freq = (i * nyquist) / binCount;
-      if (freq < 30 || freq > 12000) continue;
-
-      if (rawFreq[i] > peakMag && rawFreq[i] > 100) {
-        peakMag = rawFreq[i];
-        peakBin = i;
-      }
-    }
-
-    if (peakBin !== -1) {
-      const detectedFreq = Math.round((peakBin * nyquist) / binCount);
-      setFilterParams({ frequency: detectedFreq });
-      audioEngine.setFilterParams({ frequency: detectedFreq });
-    }
+    const detectedFreq = audioEngine.autoDetectNoisePeak();
+    setFilterParams({ frequency: detectedFreq, type: 'notch', enabled: true });
   };
 
   return (
@@ -286,19 +264,19 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
             <span>{hoverFreq} Hz</span>
           </div>
         )}
+      </div>
 
-        {/* Legend */}
-        <div className="absolute bottom-2 left-2.5 flex items-center gap-3 text-xs font-mono dsp-meter-card px-2 py-0.5 rounded-md">
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-            <span className="text-rose-300">Crudo (Pico)</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-            <span className="text-cyan-300">Filtrado (Muesca)</span>
-          </div>
-          <span className="hidden sm:inline text-[#94a3b8]">• Clic en canvas para mover f₀</span>
+      {/* Legend: debajo del canvas para no tapar las etiquetas de frecuencia del eje */}
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-mono">
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+          <span className="text-rose-300">Crudo (Pico)</span>
         </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+          <span className="text-cyan-300">Filtrado (Muesca)</span>
+        </div>
+        <span className="text-[#94a3b8]">• Clic en el gráfico para mover f₀</span>
       </div>
     </div>
   );

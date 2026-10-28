@@ -1,6 +1,7 @@
 // Regression test: voice must be preserved, ambient noise must be reduced.
 // Run: pnpm test:dsp   (node --experimental-strip-types scripts/validate-dsp.mjs)
 import { SpectralDenoiser, DENOISE_LATENCY } from '../src/dsp/spectralDenoiser.ts';
+import { computeRiemannFourier, generateSyntheticWindow } from '../src/dsp/riemannFourier.ts';
 
 const fs = 44100, N = fs * 6, TWO_PI = 2 * Math.PI;
 const db = v => 20 * Math.log10(v);
@@ -87,6 +88,17 @@ for (const snrIn of [0, 10]) {
   const V = voice(true); const out = denoise(V); const r = fit(out, V, from);
   check('voice alone transparent', r.gainDb > -1.5, `voice gain=${r.gainDb.toFixed(2)} dB (need > -1.5)`);
 }
+// Calculus II Numerical Quadrature check: Simpson 1/3 and Trapezoid must converge to Exact Analytical Integral F(T)-F(0)
+{
+  const win = generateSyntheticWindow(0.04, 44100, 60);
+  const qRes = computeRiemannFourier(win.samples, 44100, 60, 200, { noiseFrequency: 60, isLiveCapture: false, method: 'simpson' });
+  const errRiemann = qRes.quadrature.riemann_left.relErrorPct;
+  const errTrapz = qRes.quadrature.trapezoid.relErrorPct;
+  const errSimpson = qRes.quadrature.simpson.relErrorPct;
+  check('Calculus II Simpson 1/3 high accuracy (< 0.02% rel error)', errSimpson < 0.02, `simpson relErr=${errSimpson.toFixed(6)}%`);
+  check('Calculus II Simpson 1/3 beats Left Riemann', errSimpson < errRiemann, `simpson=${errSimpson.toFixed(6)}% vs riemann=${errRiemann.toFixed(4)}%`);
+  check('Calculus II Trapezoid beats Left Riemann', errTrapz < errRiemann, `trapz=${errTrapz.toFixed(4)}% vs riemann=${errRiemann.toFixed(4)}%`);
+}
 console.table(rows);
 if (failed) { console.error(`\n${failed} check(s) FAILED`); process.exit(1); }
-console.log('\nAll DSP checks passed');
+console.log('\nAll DSP & Calculus II Quadrature checks passed');

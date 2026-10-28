@@ -8,3 +8,6 @@ dist
 .aws/
 .npmrc.local
 .netrc
+
+python_engine/.venv/
+__pycache__/

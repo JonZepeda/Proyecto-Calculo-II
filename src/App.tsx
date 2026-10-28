@@ -7,21 +7,16 @@ import { Spectrogram } from './components/Spectrogram';
 import { FilterControls } from './components/FilterControls';
 import { ABCompare } from './components/ABCompare';
 import { MathLab } from './components/MathLab';
-import { ReportViewer } from './components/ReportViewer';
 import { AudioSourceType, FilterParams, PresetType } from './dsp/types';
-import { informeContent, defensaContent } from './docsData';
 
 export const App: React.FC = () => {
-  const getInitialTab = (): 'lab' | 'math' | 'report' => {
+  const getInitialTab = (): 'lab' | 'math' => {
     const params = new URLSearchParams(window.location.search);
-    const tabParam = params.get('tab');
-    if (tabParam === 'math' || tabParam === 'report') return tabParam;
-    if (window.location.hash === '#math') return 'math';
-    if (window.location.hash === '#report') return 'report';
+    if (params.get('tab') === 'math' || window.location.hash === '#math') return 'math';
     return 'lab';
   };
 
-  const [activeTab, setActiveTab] = useState<'lab' | 'math' | 'report'>(getInitialTab);
+  const [activeTab, setActiveTab] = useState<'lab' | 'math'>(getInitialTab);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [sourceType, setSourceType] = useState<AudioSourceType>('synthetic');
   const [currentPreset, setCurrentPreset] = useState<PresetType>('hum60');
@@ -91,13 +86,6 @@ export const App: React.FC = () => {
         )}
 
         {activeTab === 'math' && <MathLab />}
-
-        {activeTab === 'report' && (
-          <ReportViewer
-            informeMarkdown={informeContent}
-            defensaMarkdown={defensaContent}
-          />
-        )}
       </main>
 
       {/* Engineering Status Footer */}
