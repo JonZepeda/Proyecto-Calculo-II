@@ -1,5 +1,5 @@
 import { AudioMetrics, AudioSourceType, FilterParams, InjectedNoiseType, PresetType } from './types';
-import { SpectralDenoiser, DENOISE_FRAME } from './spectralDenoiser';
+import { SpectralDenoiser, DENOISE_FRAME, DENOISE_LATENCY } from './spectralDenoiser';
 
 export class AudioEngine {
   private ctx: AudioContext | null = null;
@@ -49,6 +49,7 @@ export class AudioEngine {
   private micSourceNode: MediaStreamAudioSourceNode | null = null;
 
   private fileBuffer: AudioBuffer | null = null;
+  private fileName = '';
   private fileSourceNode: AudioBufferSourceNode | null = null;
 
   // Live WAV recording buffers
@@ -479,6 +480,7 @@ export class AudioEngine {
     if (!this.ctx) return;
     const arrayBuffer = await file.arrayBuffer();
     this.fileBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+    this.fileName = file.name;
     this.playLoadedBuffer();
   }
 
@@ -628,6 +630,64 @@ export class AudioEngine {
 
   public getNoiseProfileState(): { learning: boolean; progress: number; hasProfile: boolean } {
     return { learning: this.denoiser.learning, progress: this.denoiser.learningProgress, hasProfile: this.denoiser.profile !== null };
+  }
+
+  public hasLoadedFile(): boolean {
+    return this.fileBuffer !== null;
+  }
+
+  /**
+   * Cleans the whole loaded file offline (much faster than playing it) with the current settings and the
+   * learned noise profile, and downloads it as a 16-bit WAV. Returns false when no file is loaded.
+   */
+  public async exportCleanedFile(): Promise<boolean> {
+    const buf = this.fileBuffer;
+    if (!buf) return false;
+    const n = buf.length;
+
+    // 1) same biquad chain as the live pipeline (a 1-channel destination mixes a stereo file down to mono)
+    const oc = new OfflineAudioContext(1, n, buf.sampleRate);
+    const src = oc.createBufferSource();
+    src.buffer = buf;
+    let node: AudioNode = src;
+    const addBiquad = (type: BiquadFilterType, f: number, q: number, gain = 0) => {
+      const b = oc.createBiquadFilter();
+      b.type = type; b.frequency.value = Math.max(10, Math.min(22000, f)); b.Q.value = Math.max(0.1, Math.min(50, q)); b.gain.value = gain;
+      node.connect(b);
+      node = b;
+    };
+    const { enabled, type, frequency, q, gain } = this.filterParams;
+    if (enabled) {
+      addBiquad(type, frequency, q, gain);
+      if (type === 'notch' && frequency <= 100) { addBiquad('notch', frequency * 2, q); addBiquad('notch', frequency * 3, q); }
+      if (this.voiceBandEnabled) { addBiquad('highpass', 80, 0); addBiquad('lowpass', 3800, 0); }
+    }
+    node.connect(oc.destination);
+    src.start();
+    const rendered = (await oc.startRendering()).getChannelData(0);
+
+    // 2) the adaptive denoiser, with the same strength and noise profile as the live one
+    const d = new SpectralDenoiser();
+    d.alpha = this.denoiser.alpha;
+    d.floorGain = this.denoiser.floorGain;
+    d.enabled = this.adaptiveMode && this.denoiseEnabled && enabled;
+    d.profile = this.denoiser.profile;
+    const B = 1024;
+    const total = Math.ceil((n + DENOISE_LATENCY) / B) * B;
+    const input = new Float32Array(total);
+    input.set(rendered);
+    const output = new Float32Array(total);
+    for (let i = 0, blocks = 0; i < total; i += B, blocks++) {
+      d.process(input.subarray(i, i + B), output.subarray(i, i + B));
+      if (blocks % 400 === 399) await new Promise(r => setTimeout(r, 0)); // let the page breathe on long files
+    }
+
+    const base = (this.fileName || 'audio').replace(/\.[^.]+$/, '');
+    this.triggerBlobDownload(
+      this.encodeWavFromFloat32(output.subarray(DENOISE_LATENCY, DENOISE_LATENCY + n), buf.sampleRate),
+      `${base}_limpio.wav`
+    );
+    return true;
   }
 
   public setVoiceBandEnabled(on: boolean): void {

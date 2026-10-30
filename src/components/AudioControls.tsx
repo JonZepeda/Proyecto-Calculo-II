@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Play, Pause, Mic, Upload, Zap, Wind, Bell, Waves, CircleDot, Square, Sparkles } from 'lucide-react';
+import { Play, Pause, Mic, Upload, Zap, Wind, Bell, Waves, Download, CircleDot, Square, Sparkles } from 'lucide-react';
 import { audioEngine } from '../dsp/audioEngine';
 import { AudioSourceType, InjectedNoiseType, PresetType } from '../dsp/types';
 
@@ -23,6 +23,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [micError, setMicError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [injectedNoise, setInjectedNoiseState] = useState<InjectedNoiseType>('none');
 
@@ -79,6 +80,17 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
       const saved = audioEngine.stopAndDownloadWav('clean');
       setIsRecording(false);
       if (!saved) setMicError('No se grabó audio: inicia el motor con "Iniciar" y vuelve a grabar.');
+    }
+  };
+
+  const handleCleanAndDownload = async () => {
+    setExporting(true);
+    try {
+      if (!(await audioEngine.exportCleanedFile())) setMicError('Primero carga un archivo WAV o MP3.');
+    } catch {
+      setMicError('No se pudo procesar el archivo.');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -263,6 +275,18 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
               </>
             )}
           </button>
+
+          {sourceType === 'file' && (
+            <button
+              onClick={handleCleanAndDownload}
+              disabled={exporting}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-mono transition-colors border bg-[#0e1d24] border-[#1b4457] text-cyan-300 hover:bg-[#132832] disabled:opacity-50"
+              title="Procesa el archivo cargado completo con el filtro actual y descarga un WAV limpio"
+            >
+              <Download className="w-3 h-3 text-cyan-400" />
+              <span>{exporting ? 'Procesando…' : 'Limpiar y descargar'}</span>
+            </button>
+          )}
         </div>
 
       </div>
