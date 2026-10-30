@@ -865,16 +865,13 @@ export class AudioEngine {
   }
 
   /**
-   * Stops WAV recording and triggers browser download of the 16-bit PCM .wav file.
+   * Stops WAV recording and downloads what was actually recorded (the processed output).
+   * Returns false when nothing was recorded; it never synthesizes audio.
    */
-  public stopAndDownloadWav(mode: 'clean' | 'raw' = 'clean'): void {
+  public stopAndDownloadWav(mode: 'clean' | 'raw' = 'clean'): boolean {
     this.isRecordingWav = false;
     const chunks = mode === 'clean' ? this.recordedCleanChunks : this.recordedRawChunks;
-    if (chunks.length === 0) {
-      // Fallback: synthesize 3 seconds of current state and encode WAV immediately
-      this.exportInstantSyntheticWav(mode);
-      return;
-    }
+    if (chunks.length === 0) return false;
 
     const totalLen = chunks.reduce((acc, c) => acc + c.length, 0);
     const merged = new Float32Array(totalLen);
@@ -884,53 +881,14 @@ export class AudioEngine {
       offset += chunk.length;
     }
 
-    const wavBlob = this.encodeWavFromFloat32(merged, this.getSampleRate());
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[-:]/g, '').replace('T', '-');
+    // With the filter toggle off the "clean" branch is the untouched input: say so in the name.
+    const tag = mode === 'clean' && !this.filterParams.enabled ? '_filtro-apagado' : '';
     this.triggerBlobDownload(
-      wavBlob,
-      `fourier_dsp_${mode}_${Math.round(this.filterParams.frequency)}Hz.wav`
+      this.encodeWavFromFloat32(merged, this.getSampleRate()),
+      `fourier_dsp_${mode === 'clean' ? 'limpio' : 'original'}${tag}_${stamp}.wav`
     );
-  }
-
-  /**
-   * Generates a 3-second WAV file (clean or raw) instantly without waiting for live recording.
-   */
-  public exportInstantSyntheticWav(mode: 'clean' | 'raw' = 'clean'): void {
-    const fs = this.getSampleRate();
-    const duration = 3.0;
-    const N = Math.floor(fs * duration);
-    const samples = new Float32Array(N);
-    const fNotch = this.filterParams.frequency;
-    const preset = this.currentPreset;
-
-    for (let n = 0; n < N; n++) {
-      const t = n / fs;
-      const vib = 3.5 * Math.sin(2 * Math.PI * 4.5 * t);
-      const voice =
-        (0.35 * Math.sin(2 * Math.PI * (140 + vib) * t) +
-          0.28 * Math.sin(2 * Math.PI * (280 + vib) * t) +
-          0.22 * Math.sin(2 * Math.PI * (420 + vib) * t) +
-          0.30 * Math.sin(2 * Math.PI * (700 + vib) * t) +
-          0.25 * Math.sin(2 * Math.PI * (1260 + vib) * t)) *
-        0.35;
-
-      let noise = 0;
-      if (mode === 'raw' || !this.filterParams.enabled) {
-        if (preset === 'whistle2500') {
-          noise = 0.45 * Math.sin(2 * Math.PI * 2500 * t);
-        } else if (preset === 'test1000') {
-          noise = 0.45 * Math.sin(2 * Math.PI * 1000 * t);
-        } else {
-          noise =
-            0.48 * Math.sin(2 * Math.PI * 60 * t) +
-            0.22 * Math.sin(2 * Math.PI * 120 * t) +
-            0.12 * Math.sin(2 * Math.PI * 180 * t);
-        }
-      }
-      samples[n] = voice + noise;
-    }
-
-    const wavBlob = this.encodeWavFromFloat32(samples, fs);
-    this.triggerBlobDownload(wavBlob, `fourier_dsp_${preset}_${mode}_${Math.round(fNotch)}Hz.wav`);
+    return true;
   }
 
   private encodeWavFromFloat32(samples: Float32Array, sampleRate: number): Blob {

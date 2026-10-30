@@ -1,0 +1,49 @@
+PASS SNR in 0 dB gated: noise reduced  ΔSNR=5.6 dB (need ≥ 4)
+PASS SNR in 0 dB gated: voice kept  voice gain=-1.3 dB (need > -3)
+PASS SNR in 0 dB continuous: noise reduced  ΔSNR=4.4 dB (need ≥ 4)
+PASS SNR in 0 dB continuous: voice kept  voice gain=-2.3 dB (need > -3)
+PASS SNR in 10 dB gated: noise reduced  ΔSNR=5.9 dB (need ≥ 4)
+PASS SNR in 10 dB gated: voice kept  voice gain=-0.3 dB (need > -3)
+PASS SNR in 10 dB continuous: noise reduced  ΔSNR=5.4 dB (need ≥ 4)
+PASS SNR in 10 dB continuous: voice kept  voice gain=-0.8 dB (need > -3)
+PASS voice alone transparent: gliding voice  voice gain=-0.14 dB (need > -1.5)
+FAIL voice alone transparent: sustained vowel (f0 constant)  voice gain=-6.14 dB (need > -1.5)
+
+== Ruido dinámico (sin notch fijo) ==
+┌─────────┬───────────────────────────────────────────────────────────────┬────────────┬───────────┬─────────────────┐
+│ (index) │ escenario                                                     │ SNR salida │ mejora dB │ ganancia voz dB │
+├─────────┼───────────────────────────────────────────────────────────────┼────────────┼───────────┼─────────────────┤
+│ 0       │ 'tono fijo 2.5 kHz | SNR in 0 dB | voz con pausas'            │ 0.8        │ 0.8       │ -0.1            │
+│ 1       │ 'tono que barre 0.8-3 kHz | SNR in 0 dB | voz con pausas'     │ -0.4       │ -0.4      │ -0.1            │
+│ 2       │ 'dos tonos (1 kHz + 2.5 kHz) | SNR in 0 dB | voz con pausas'  │ 1.1        │ 1.1       │ -0.2            │
+│ 3       │ 'zumbido 60 Hz + armónicos | SNR in 0 dB | voz con pausas'    │ 5.5        │ 5.5       │ -1.1            │
+│ 4       │ 'banda que cambia de lugar | SNR in 0 dB | voz con pausas'    │ -0.1       │ -0.1      │ -0.2            │
+│ 5       │ 'tono fijo 2.5 kHz | SNR in 0 dB | voz continua'              │ 0.4        │ 0.4       │ -0.6            │
+│ 6       │ 'tono que barre 0.8-3 kHz | SNR in 0 dB | voz continua'       │ -0.8       │ -0.8      │ -0.5            │
+│ 7       │ 'dos tonos (1 kHz + 2.5 kHz) | SNR in 0 dB | voz continua'    │ 0.7        │ 0.7       │ -0.6            │
+│ 8       │ 'zumbido 60 Hz + armónicos | SNR in 0 dB | voz continua'      │ 4.8        │ 4.8       │ -1.3            │
+│ 9       │ 'banda que cambia de lugar | SNR in 0 dB | voz continua'      │ -0.7       │ -0.7      │ -0.7            │
+│ 10      │ 'tono fijo 2.5 kHz | SNR in 10 dB | voz con pausas'           │ 10.8       │ 0.8       │ -0.1            │
+│ 11      │ 'tono que barre 0.8-3 kHz | SNR in 10 dB | voz con pausas'    │ 9.6        │ -0.4      │ -0.1            │
+│ 12      │ 'dos tonos (1 kHz + 2.5 kHz) | SNR in 10 dB | voz con pausas' │ 11.1       │ 1.1       │ -0.1            │
+│ 13      │ 'zumbido 60 Hz + armónicos | SNR in 10 dB | voz con pausas'   │ 15.8       │ 5.8       │ -0.3            │
+│ 14      │ 'banda que cambia de lugar | SNR in 10 dB | voz con pausas'   │ 10.1       │ 0.1       │ -0.2            │
+│ 15      │ 'tono fijo 2.5 kHz | SNR in 10 dB | voz continua'             │ 10.4       │ 0.4       │ -0.5            │
+│ 16      │ 'tono que barre 0.8-3 kHz | SNR in 10 dB | voz continua'      │ 9.2        │ -0.8      │ -0.5            │
+│ 17      │ 'dos tonos (1 kHz + 2.5 kHz) | SNR in 10 dB | voz continua'   │ 10.7       │ 0.7       │ -0.6            │
+│ 18      │ 'zumbido 60 Hz + armónicos | SNR in 10 dB | voz continua'     │ 15.6       │ 5.6       │ -0.8            │
+│ 19      │ 'banda que cambia de lugar | SNR in 10 dB | voz continua'     │ 9.7        │ -0.3      │ -0.7            │
+└─────────┴───────────────────────────────────────────────────────────────┴────────────┴───────────┴─────────────────┘
+PASS Calculus II Simpson 1/3 high accuracy (< 0.02% rel error)  simpson relErr=0.010049%
+PASS Calculus II Simpson 1/3 beats Left Riemann  simpson=0.010049% vs riemann=0.1445%
+PASS Calculus II Trapezoid beats Left Riemann  trapz=0.0890% vs riemann=0.1445%
+┌─────────┬────────────────────────────────────────────┬───────────┬───────────┬─────────────────┬─────────────────┐
+│ (index) │ escenario                                  │ SNR viejo │ SNR nuevo │ mejora vs viejo │ ganancia voz dB │
+├─────────┼────────────────────────────────────────────┼───────────┼───────────┼─────────────────┼─────────────────┤
+│ 0       │ 'ruido rosa, SNR in 0 dB, voz con pausas'  │ 0.6       │ 5.6       │ 5               │ -1.3            │
+│ 1       │ 'ruido rosa, SNR in 0 dB, voz continua'    │ 0.6       │ 4.4       │ 3.9             │ -2.3            │
+│ 2       │ 'ruido rosa, SNR in 10 dB, voz con pausas' │ 10.6      │ 15.9      │ 5.3             │ -0.3            │
+│ 3       │ 'ruido rosa, SNR in 10 dB, voz continua'   │ 10.5      │ 15.4      │ 4.8             │ -0.8            │
+└─────────┴────────────────────────────────────────────┴───────────┴───────────┴─────────────────┴─────────────────┘
+
+1 check(s) FAILED

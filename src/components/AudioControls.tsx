@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Play, Pause, Mic, Upload, Zap, Wind, Bell, Waves, Download, CircleDot, Square, Sparkles } from 'lucide-react';
+import { Play, Pause, Mic, Upload, Zap, Wind, Bell, Waves, CircleDot, Square, Sparkles } from 'lucide-react';
 import { audioEngine } from '../dsp/audioEngine';
 import { AudioSourceType, InjectedNoiseType, PresetType } from '../dsp/types';
 
@@ -76,33 +76,10 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
       audioEngine.startWavRecording();
       setIsRecording(true);
     } else {
-      audioEngine.stopAndDownloadWav('clean');
+      const saved = audioEngine.stopAndDownloadWav('clean');
       setIsRecording(false);
+      if (!saved) setMicError('No se grabó audio: inicia el motor con "Iniciar" y vuelve a grabar.');
     }
-  };
-
-  const handleInstantWavExport = async (mode: 'clean' | 'raw') => {
-    // Try Python SciPy filtfilt WAV export first if backend is running, fallback to instant client WAV
-    try {
-      const f = audioEngine.getFilterParams();
-      const url = `/api/export-wav?preset=${currentPreset}&duration_s=4&notch_freq=${f.frequency}&q_factor=${f.q}&mode=${mode}`;
-      const res = await fetch(url);
-      if (res.ok && res.headers.get('content-type')?.includes('audio/wav')) {
-        const blob = await res.blob();
-        const dlUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = dlUrl;
-        a.download = `scipy_${currentPreset}_${mode}_${Math.round(f.frequency)}Hz.wav`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(dlUrl), 2000);
-        return;
-      }
-    } catch {
-      // Fallback to Web Audio PCM encoder
-    }
-    audioEngine.exportInstantSyntheticWav(mode);
   };
 
   const handleInjectedNoiseChange = (noise: InjectedNoiseType) => {
@@ -272,12 +249,12 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
                 ? 'bg-rose-950/80 border-rose-500 text-rose-200 animate-pulse'
                 : 'bg-[#0e1016] border-[#181c25] text-[#94a3b8] hover:text-white hover:border-[#222734]'
             }`}
-            title="Grabar sesión en vivo y descargar archivo .WAV limpio"
+            title="Graba lo que escuchas ya procesado y lo descarga al detener"
           >
             {isRecording ? (
               <>
                 <Square className="w-3 h-3 text-rose-400 fill-current" />
-                <span>Guardar Grabación WAV</span>
+                <span>Detener y descargar WAV</span>
               </>
             ) : (
               <>
@@ -285,15 +262,6 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
                 <span>Grabar WAV</span>
               </>
             )}
-          </button>
-
-          <button
-            onClick={() => handleInstantWavExport('clean')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-mono transition-colors border bg-[#0e1d24] border-[#1b4457] text-cyan-300 hover:bg-[#132832]"
-            title="Descargar archivo .WAV restaurado (SciPy / PCM 16-bit)"
-          >
-            <Download className="w-3 h-3 text-cyan-400" />
-            <span>Exportar WAV Limpio</span>
           </button>
         </div>
 
