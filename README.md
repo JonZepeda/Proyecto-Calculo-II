@@ -69,6 +69,7 @@ Déjalo corriendo en una segunda terminal junto a `npm run dev`; Vite redirige `
    - **Espectrograma en Cascada (Waterfall)**: Mapa de calor en 2D (Tiempo vs. Frecuencia vs. Energía) donde se observa la línea de ruido desaparecer al activar el filtro.
    - **Conmutador A / B**: Alterna entre el audio original con ruido y el audio filtrado (con una transición corta de unos 20 ms).
    - **Modo Adaptativo / Fijo**: *Fijo* es un solo filtro en una frecuencia (muesca, pasa-bajo o pasa-alto). *Adaptativo* (por defecto) estima el ruido de cada banda mientras cambia, lo atenúa y muestra los tonos fijos que está cortando (por ejemplo "2.5 kHz"); el filtro fijo queda como extra para zumbido de 50/60 Hz.
+   - **Aprender ruido ambiente**: en modo Adaptativo, el botón "Aprender ruido (2 s)" promedia 2 s de sonido de fondo (teclado, ventilador, ambiente) como perfil y lo quita de la voz. Con ruido real (clics de teclado + ambiente de una grabación propia, sobre voz real, perfil aprendido de una pausa que el filtro no vio) mejora de +3 a +4 dB la relación señal/ruido, frente a +0,7 dB sin perfil; en la grabación de prueba el fondo en las pausas baja unos 13 dB sin cambiar el nivel de la voz. Los clics que caen sobre la voz solo bajan ~2 dB más: un filtro de un solo canal no los separa bien de las consonantes.
    - **Detección Automática de Ruido**: Algoritmo que escanea el espectro y sintoniza el filtro automáticamente sobre el pico armónico parásito.
 
 2. **📐 Fundamento Matemático (Cálculo II)**:

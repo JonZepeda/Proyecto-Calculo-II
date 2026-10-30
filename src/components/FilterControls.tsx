@@ -18,6 +18,28 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
   const [strength, setStrength] = useState(audioEngine.getDenoiseStrength());
   const [tones, setTones] = useState<number[]>([]);
   const seen = useRef(new Map<number, number>()); // tone (rounded to 50 Hz) -> last time seen
+  const [noise, setNoise] = useState({ learning: false, progress: 0, hasProfile: false });
+  const [noiseHint, setNoiseHint] = useState<string | null>(null);
+
+  // Progress of the "learn ambient noise" pass
+  useEffect(() => {
+    if (!adaptive) return;
+    const id = setInterval(() => setNoise(audioEngine.getNoiseProfileState()), 200);
+    return () => clearInterval(id);
+  }, [adaptive]);
+
+  const learnNoise = () => {
+    if (!audioEngine.getIsPlaying()) {
+      setNoiseHint('Primero inicia el audio (Iniciar, Micrófono o un archivo).');
+      return;
+    }
+    setNoiseHint(null);
+    audioEngine.learnNoiseProfile();
+  };
+  const forgetNoise = () => {
+    audioEngine.clearNoiseProfile();
+    setNoiseHint(null);
+  };
 
   // Tones flicker frame to frame: keep each one on screen for 1.5 s after it was last detected.
   useEffect(() => {
@@ -220,6 +242,35 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
               onChange={e => handleStrengthChange(parseFloat(e.target.value))}
               className="w-full h-1 bg-[#1a1e27] rounded cursor-pointer disabled:opacity-40"
             />
+          </div>
+
+          <div className="dsp-meter-card p-3 rounded-md font-mono text-xs flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[#94a3b8]">Ruido ambiente</span>
+              {noise.learning ? (
+                <span className="text-cyan-300 font-bold">Aprendiendo… {Math.round(noise.progress * 100)} %</span>
+              ) : noise.hasProfile ? (
+                <span className="flex items-center gap-2">
+                  <span className="text-emerald-300 font-bold">Perfil aprendido</span>
+                  <button onClick={forgetNoise} className="px-2 py-0.5 rounded border border-[#1e2330] bg-[#12151d] text-[#94a3b8] hover:text-white">Olvidar</button>
+                </span>
+              ) : (
+                <button
+                  onClick={learnNoise}
+                  className="px-2.5 py-1 rounded-md border bg-[#0e1d24] border-[#1b4457] text-cyan-300 hover:bg-[#132832]"
+                  title="Quédate en silencio unos 2 s: el filtro aprende el sonido de fondo y lo quita de tu voz"
+                >
+                  Aprender ruido (2 s)
+                </button>
+              )}
+            </div>
+            <p className="text-[#94a3b8] leading-relaxed">
+              {noiseHint ?? (noise.learning
+                ? 'No hables: solo el sonido de fondo (teclado, ventilador, ambiente).'
+                : noise.hasProfile
+                  ? 'Se quita ese sonido de fondo de lo que grabes o escuches.'
+                  : 'Con la voz en silencio, deja que aprenda el ruido de fondo.')}
+            </p>
           </div>
 
           <div className="dsp-meter-card p-3 rounded-md font-mono text-xs flex items-center justify-between gap-2">

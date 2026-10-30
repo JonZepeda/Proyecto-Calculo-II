@@ -28,9 +28,17 @@ export const MIN_BIAS = 2.9;
 /** Tone detector: level tracked with time constant ≈ 1/(1-TONE_A) frames (≈ 0.6 s). */
 const TONE_A = 0.99;
 const TONE_PROMINENCE_DB = 10;
-const TONE_MAX_STD_DB = 2;
-/** No tone detection below ~300 Hz: the voice fundamental lives there and 43 Hz bins cannot resolve a 50/60 Hz hum. */
-const TONE_MIN_BIN = 7;
+const TONE_MAX_STD_DB = 3;
+/** A very prominent peak is allowed to wobble more (tone played through a speaker): +0.2 dB of std per dB of prominence above 10 dB, up to 6 dB. */
+const TONE_STD_PER_PROMINENCE = 0.2;
+const TONE_STD_CAP_DB = 6;
+/** No tone detection below ~500 Hz: the voice fundamental and its first harmonics live there and 43 Hz bins cannot resolve a 50/60 Hz hum. */
+const TONE_MIN_BIN = 12;
+/** Amplitude gain of a detected tone (-30 dB), independent of the intensity slider. */
+const TONE_GAIN = 0.03;
+/** Learned noise profile: frames to average (≈ 2 s at hop 256 / 44.1 kHz) and how the Wiener strength changes when a profile exists. */
+export const PROFILE_FRAMES = 340;
+const PROFILE_DIV = 2;       // beta = alpha / PROFILE_DIV with a profile (vs alpha / 4 without it): a known noise can be cut harder
 /** Decision-directed smoothing of the a-priori SNR. */
 const DD_ALPHA = 0.98;
 
@@ -94,6 +102,11 @@ export class SpectralDenoiser {
   private readonly muPrefix: Float64Array;
   /** Noise power per bin actually used by the gain (read by tests). */
   public readonly noise: Float32Array;
+  /** Mean noise power per bin learned from a captured "silence" (null = none). */
+  public profile: Float32Array | null = null;
+  private learnLeft = 0;
+  private learnTotal = 0;
+  private readonly learnSum: Float64Array;
   /** 1 where the last frame detected a steady tone (read by the UI). */
   public readonly toneFlag: Uint8Array;
   private initialised = false;
@@ -125,6 +138,7 @@ export class SpectralDenoiser {
     this.muPrefix = new Float64Array(this.bins + 1);
     this.noise = new Float32Array(this.bins);
     this.toneFlag = new Uint8Array(this.bins);
+    this.learnSum = new Float64Array(this.bins);
     this.gain = new Float32Array(this.bins).fill(1);
     this.reset();
   }
@@ -137,6 +151,16 @@ export class SpectralDenoiser {
     this.ring.forEach(r => r.fill(Infinity));
     this.ringIdx = 0; this.subCount = 0;
   }
+
+  /** Start averaging the next `frames` frames of input as the ambient-noise profile (audio passes through unchanged meanwhile). */
+  public beginLearning(frames: number = PROFILE_FRAMES): void {
+    this.learnTotal = this.learnLeft = Math.max(1, frames);
+    this.learnSum.fill(0);
+  }
+  public clearProfile(): void { this.profile = null; this.learnLeft = 0; }
+  public get learning(): boolean { return this.learnLeft > 0; }
+  /** 0..1 progress of the current learning pass. */
+  public get learningProgress(): number { return this.learnTotal ? 1 - this.learnLeft / this.learnTotal : 0; }
 
   /** Processes a block; output is delayed by DENOISE_LATENCY samples. */
   public process(input: Float32Array, output: Float32Array): void {
@@ -158,7 +182,8 @@ export class SpectralDenoiser {
     for (let i = 0; i < N; i++) { re[i] = this.hist[i] * this.win[i]; im[i] = 0; }
     fftInPlace(re, im, false);
 
-    if (this.enabled) this.updateGains();
+    if (this.learnLeft > 0) this.learnFrame();
+    else if (this.enabled) this.updateGains();
     else this.gain.fill(1);
 
     for (let k = 0; k < bins; k++) {
@@ -172,6 +197,19 @@ export class SpectralDenoiser {
     this.outHop.set(this.ola.subarray(0, hop));
     this.ola.copyWithin(0, hop);
     this.ola.fill(0, N - hop);
+  }
+
+  private learnFrame(): void {
+    const { bins, re, im, learnSum } = this;
+    for (let k = 0; k < bins; k++) learnSum[k] += re[k] * re[k] + im[k] * im[k];
+    this.gain.fill(1);
+    if (--this.learnLeft === 0) {
+      const mean = new Float32Array(bins);
+      for (let k = 0; k < bins; k++) mean[k] = learnSum[k] / this.learnTotal;
+      // 3-bin smoothing: the profile is a spectral envelope, not a single noisy periodogram
+      this.profile = mean.map((v, k) => (mean[Math.max(0, k - 1)] + v + mean[Math.min(bins - 1, k + 1)]) / 3);
+      this.prevClean.fill(0);
+    }
   }
 
   private updateGains(): void {
@@ -212,12 +250,14 @@ export class SpectralDenoiser {
       muPrefix[k + 1] = muPrefix[k] + mu[k];
     }
     const R = 8;
-    const beta = this.alpha / 4;
+    const profile = this.profile;
+    const beta = this.alpha / (profile ? PROFILE_DIV : 4);
     const gmin = Math.max(this.floorGain, 0.03);
     for (let k = 0; k < bins; k++) {
       const lo = Math.max(0, k - R), hi = Math.min(bins - 1, k + R);
       const cap = (mPrefix[hi + 1] - mPrefix[lo]) / (hi - lo + 1);
       let lam = Math.min(Math.min(curMin[k], histMin[k]), cap) * MIN_BIAS + 1e-20;
+      if (profile) lam = Math.max(lam, profile[k]);   // the learned ambient noise is a floor for the estimate
       let isTone = false;
 
       // neighbours 6..10 bins away on both sides (outside the tone's main lobe)
@@ -225,7 +265,9 @@ export class SpectralDenoiser {
       const nb = (l1 - l0) + (r1 - r0);
       if (nb > 0 && k >= TONE_MIN_BIN) {
         const around = (muPrefix[l1] - muPrefix[l0] + muPrefix[r1] - muPrefix[r0]) / nb;
-        if (mu[k] - around > TONE_PROMINENCE_DB && Math.sqrt(vr[k]) < TONE_MAX_STD_DB) {
+        const prom = mu[k] - around;
+        const maxStd = Math.min(TONE_STD_CAP_DB, TONE_MAX_STD_DB + Math.max(0, prom - TONE_PROMINENCE_DB) * TONE_STD_PER_PROMINENCE);
+        if (prom > TONE_PROMINENCE_DB && Math.sqrt(vr[k]) < maxStd) {
           lam = Math.max(lam, Math.pow(10, mu[k] / 10));   // a steady tone is noise as loud as it is
           isTone = true;
         }
@@ -236,7 +278,7 @@ export class SpectralDenoiser {
       const gamma = P[k] / lam;
       const xi = DD_ALPHA * prevClean[k] / lam + (1 - DD_ALPHA) * Math.max(gamma - 1, 0);
       // amplitude gain: sqrt of the Wiener power gain; a detected steady tone is cut to the floor
-      const g = isTone ? gmin : Math.max(Math.sqrt(xi / (beta + xi)), gmin);
+      const g = isTone ? TONE_GAIN : Math.max(Math.sqrt(xi / (beta + xi)), gmin);
       gain[k] = g;
       prevClean[k] = g * g * P[k];
     }

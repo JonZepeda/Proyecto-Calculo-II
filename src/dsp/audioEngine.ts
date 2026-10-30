@@ -617,6 +617,19 @@ export class AudioEngine {
     return tones.slice(0, 4);
   }
 
+  /** Averages ~2 s of the incoming audio as the ambient-noise profile. Call it while only the noise is present. */
+  public learnNoiseProfile(): void {
+    this.denoiser.beginLearning();
+  }
+
+  public clearNoiseProfile(): void {
+    this.denoiser.clearProfile();
+  }
+
+  public getNoiseProfileState(): { learning: boolean; progress: number; hasProfile: boolean } {
+    return { learning: this.denoiser.learning, progress: this.denoiser.learningProgress, hasProfile: this.denoiser.profile !== null };
+  }
+
   public setVoiceBandEnabled(on: boolean): void {
     this.voiceBandEnabled = on;
     this.applyFilterParams();
