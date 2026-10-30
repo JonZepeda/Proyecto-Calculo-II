@@ -68,6 +68,7 @@ Déjalo corriendo en una segunda terminal junto a `npm run dev`; Vite redirige `
    - **Analizador Espectral**: Gráfica $|\hat{f}(\xi)|$ de 20 Hz a 20 kHz con cursor interactivo para mover la frecuencia de muesca directamente en el gráfico.
    - **Espectrograma en Cascada (Waterfall)**: Mapa de calor en 2D (Tiempo vs. Frecuencia vs. Energía) donde se observa la línea de ruido desaparecer al activar el filtro.
    - **Conmutador A / B**: Alterna entre el audio original con ruido y el audio filtrado (con una transición corta de unos 20 ms).
+   - **Modo Adaptativo / Fijo**: *Fijo* es un solo filtro en una frecuencia (muesca, pasa-bajo o pasa-alto). *Adaptativo* (por defecto) estima el ruido de cada banda mientras cambia, lo atenúa y muestra los tonos fijos que está cortando (por ejemplo "2.5 kHz"); el filtro fijo queda como extra para zumbido de 50/60 Hz.
    - **Detección Automática de Ruido**: Algoritmo que escanea el espectro y sintoniza el filtro automáticamente sobre el pico armónico parásito.
 
 2. **📐 Fundamento Matemático (Cálculo II)**:

@@ -1,5 +1,5 @@
 import { AudioMetrics, AudioSourceType, FilterParams, InjectedNoiseType, PresetType } from './types';
-import { SpectralDenoiser } from './spectralDenoiser';
+import { SpectralDenoiser, DENOISE_FRAME } from './spectralDenoiser';
 
 export class AudioEngine {
   private ctx: AudioContext | null = null;
@@ -20,6 +20,8 @@ export class AudioEngine {
   private denoiseNode: ScriptProcessorNode | null = null;
   private denoiser = new SpectralDenoiser();
   private voiceBandEnabled = true;
+  /** true = the adaptive denoiser runs; false = only the fixed biquad filter (the old behaviour). */
+  private adaptiveMode = true;
   private spectrumMean: Float32Array | null = null;
   private spectrumVar: Float32Array | null = null;
   private spectrumFloat: Float32Array<ArrayBuffer> | null = null;
@@ -351,12 +353,24 @@ export class AudioEngine {
     lfoGain.gain.setValueAtTime(3.5, t); // 3.5 Hz pitch variance
     lfo.connect(lfoGain);
 
+    // Slow intonation glide (±25 Hz on f0, scaled per harmonic) like real speech. A voice whose pitch never
+    // moves would look like a steady tone to the adaptive denoiser.
+    const glide = this.ctx.createOscillator();
+    glide.frequency.setValueAtTime(0.7, t);
+    glide.start();
+    oscs.push(glide);
+
     voiceHarmonics.forEach(h => {
       const osc = this.ctx!.createOscillator();
       const g = this.ctx!.createGain();
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(h.f, t);
       lfoGain.connect(osc.frequency);
+      const glideGain = this.ctx!.createGain();
+      glideGain.gain.setValueAtTime(25 * (h.f / baseFreq), t);
+      glide.connect(glideGain);
+      glideGain.connect(osc.frequency);
+      gains.push(glideGain);
 
       g.gain.setValueAtTime(h.gain * 0.4, t);
       osc.connect(g);
@@ -552,7 +566,7 @@ export class AudioEngine {
       this.voiceHP.type = this.voiceBandEnabled && enabled ? 'highpass' : 'allpass';
       this.voiceLP.type = this.voiceBandEnabled && enabled ? 'lowpass' : 'allpass';
     }
-    this.denoiser.enabled = this.denoiseEnabled && enabled;
+    this.denoiser.enabled = this.adaptiveMode && this.denoiseEnabled && enabled;
   }
 
   private denoiseEnabled = true;
@@ -578,6 +592,30 @@ export class AudioEngine {
   }
 
   private denoiseStrength = 0.5;
+
+  public setAdaptiveMode(on: boolean): void {
+    this.adaptiveMode = on;
+    this.applyFilterParams();
+  }
+
+  public getAdaptiveMode(): boolean {
+    return this.adaptiveMode;
+  }
+
+  /** Centre frequency (Hz) of each steady tone the adaptive denoiser is cutting right now (max 4). */
+  public getDetectedTonesHz(): number[] {
+    const flags = this.denoiser.toneFlag;
+    const hzPerBin = this.getSampleRate() / DENOISE_FRAME;
+    const tones: number[] = [];
+    for (let k = 0; k < flags.length; k++) {
+      if (!flags[k]) continue;
+      let j = k;
+      while (j + 1 < flags.length && flags[j + 1]) j++;
+      tones.push(Math.round(((k + j) / 2) * hzPerBin));
+      k = j;
+    }
+    return tones.slice(0, 4);
+  }
 
   public setVoiceBandEnabled(on: boolean): void {
     this.voiceBandEnabled = on;

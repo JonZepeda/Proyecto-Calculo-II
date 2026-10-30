@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FilterParams, FilterType } from '../dsp/types';
 import { audioEngine } from '../dsp/audioEngine';
 import { Sliders } from 'lucide-react';
@@ -12,9 +12,31 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
   filterParams,
   setFilterParams,
 }) => {
+  const [adaptive, setAdaptive] = useState(audioEngine.getAdaptiveMode());
   const [denoise, setDenoise] = useState(audioEngine.getDenoiseEnabled());
   const [voiceBand, setVoiceBand] = useState(audioEngine.getVoiceBandEnabled());
+  const [strength, setStrength] = useState(audioEngine.getDenoiseStrength());
+  const [tones, setTones] = useState<number[]>([]);
+  const seen = useRef(new Map<number, number>()); // tone (rounded to 50 Hz) -> last time seen
 
+  // Tones flicker frame to frame: keep each one on screen for 1.5 s after it was last detected.
+  useEffect(() => {
+    if (!adaptive) return;
+    const id = setInterval(() => {
+      const now = performance.now();
+      for (const hz of audioEngine.getDetectedTonesHz()) seen.current.set(Math.round(hz / 50) * 50, now);
+      for (const [hz, t] of seen.current) if (now - t > 1500) seen.current.delete(hz);
+      setTones([...seen.current.keys()].sort((a, b) => a - b));
+    }, 250);
+    return () => clearInterval(id);
+  }, [adaptive]);
+
+  const isNotch = filterParams.type === 'notch';
+
+  const changeMode = (on: boolean) => {
+    audioEngine.setAdaptiveMode(on);
+    setAdaptive(on);
+  };
   const toggleEnabled = () => {
     setFilterParams({ enabled: !filterParams.enabled });
     audioEngine.setFilterParams({ enabled: !filterParams.enabled });
@@ -27,9 +49,6 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
     audioEngine.setVoiceBandEnabled(!voiceBand);
     setVoiceBand(!voiceBand);
   };
-
-  const [strength, setStrength] = useState(audioEngine.getDenoiseStrength());
-  const isNotch = filterParams.type === 'notch';
 
   // Sensible defaults per type: a lowpass/highpass left at the notch's 60 Hz / Q=12 either
   // silences the voice (lowpass@60Hz) or adds a +12 dB resonance (Q is in dB for LP/HP).
@@ -69,65 +88,26 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
     { type: 'highpass', label: 'Pasa-Alto', on: 'bg-[#21160d] text-amber-300 border border-[#4d3215]' },
   ];
 
-  return (
-    <div className="dsp-chassis rounded-lg p-3.5 flex flex-col gap-3">
-      {/* Header + filter type */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Sliders className="w-3.5 h-3.5 text-cyan-400" />
-          <span className="font-mono text-xs font-semibold text-[#f1f5f9] tracking-wider uppercase">Filtro</span>
-        </div>
-        <div className="flex items-center dsp-well p-0.5 rounded-md text-xs font-mono">
-          {TYPES.map(t => (
-            <button
-              key={t.type}
-              onClick={() => handleTypeChange(t.type)}
-              className={`px-2.5 py-0.5 rounded transition-colors whitespace-nowrap ${
-                filterParams.type === t.type ? t.on : 'text-[#858e9f] hover:text-[#d1d5db]'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
+  const MODES = [
+    { on: true, label: 'Adaptativo' },
+    { on: false, label: 'Fijo' },
+  ];
 
-      {/* On/off toggles */}
-      <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
-        {[
-          { label: 'Filtro', on: filterParams.enabled, toggle: toggleEnabled },
-          { label: 'Banda de voz', on: voiceBand, toggle: toggleVoiceBand },
-          { label: 'Reducir ruido', on: denoise, toggle: toggleDenoise },
-        ].map(t => (
+  // The fixed (biquad) filter controls: the whole filter in "Fijo" mode, an optional extra in "Adaptativo".
+  const fixedControls = (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center dsp-well p-0.5 rounded-md text-xs font-mono self-start">
+        {TYPES.map(t => (
           <button
-            key={t.label}
-            onClick={t.toggle}
-            aria-pressed={t.on}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border whitespace-nowrap transition-colors ${
-              t.on
-                ? 'bg-[#101b15] text-emerald-300 border-[#1f402c]'
-                : 'dsp-meter-card text-[#94a3b8] hover:text-[#e2e8f0]'
+            key={t.type}
+            onClick={() => handleTypeChange(t.type)}
+            className={`px-2.5 py-0.5 rounded transition-colors whitespace-nowrap ${
+              filterParams.type === t.type ? t.on : 'text-[#858e9f] hover:text-[#d1d5db]'
             }`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${t.on ? 'bg-emerald-400' : 'bg-transparent border border-[#475569]'}`} />
-            <span>{t.label}</span>
+            {t.label}
           </button>
         ))}
-      </div>
-
-      {/* Sliders: one compact card each */}
-      <div className="dsp-meter-card p-3 rounded-md flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <label htmlFor="denoise-strength" className="text-xs font-mono text-[#94a3b8]">Intensidad del ruido a quitar</label>
-          <span className="font-mono text-sm font-bold text-cyan-400">{Math.round(strength * 100)} %</span>
-        </div>
-        <input
-          id="denoise-strength"
-          type="range" min="0" max="1" step="0.05" value={strength} disabled={!denoise}
-          title="Más alto quita más ruido, pero la voz puede sonar metálica"
-          onChange={e => handleStrengthChange(parseFloat(e.target.value))}
-          className="w-full h-1 bg-[#1a1e27] rounded cursor-pointer disabled:opacity-40"
-        />
       </div>
 
       <div className="dsp-meter-card p-3 rounded-md flex flex-col gap-2">
@@ -168,6 +148,97 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
           className="w-full h-1 bg-[#1a1e27] rounded cursor-pointer"
         />
       </div>
+    </div>
+  );
+
+  const toggles = [
+    { label: 'Filtro', on: filterParams.enabled, toggle: toggleEnabled },
+    { label: 'Banda de voz', on: voiceBand, toggle: toggleVoiceBand },
+    ...(adaptive ? [{ label: 'Reducir ruido', on: denoise, toggle: toggleDenoise }] : []),
+  ];
+
+  return (
+    <div className="dsp-chassis rounded-lg p-3.5 flex flex-col gap-3">
+      {/* Header + mode */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+          <span className="font-mono text-xs font-semibold text-[#f1f5f9] tracking-wider uppercase">Filtro</span>
+        </div>
+        <div className="flex items-center dsp-well p-0.5 rounded-md text-xs font-mono" role="group" aria-label="Modo del filtro">
+          {MODES.map(m => (
+            <button
+              key={m.label}
+              onClick={() => changeMode(m.on)}
+              aria-pressed={adaptive === m.on}
+              className={`px-2.5 py-0.5 rounded transition-colors whitespace-nowrap ${
+                adaptive === m.on ? 'bg-[#0f1d24] text-cyan-300 border border-[#184357]' : 'text-[#858e9f] hover:text-[#d1d5db]'
+              }`}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <p className="text-xs font-mono text-[#94a3b8] leading-relaxed">
+        {adaptive
+          ? 'Sigue el ruido mientras cambia y quita tonos fijos (silbidos, pitidos).'
+          : 'Un solo filtro en una frecuencia fija, sin seguimiento.'}
+      </p>
+
+      {/* On/off toggles */}
+      <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+        {toggles.map(t => (
+          <button
+            key={t.label}
+            onClick={t.toggle}
+            aria-pressed={t.on}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border whitespace-nowrap transition-colors ${
+              t.on
+                ? 'bg-[#101b15] text-emerald-300 border-[#1f402c]'
+                : 'dsp-meter-card text-[#94a3b8] hover:text-[#e2e8f0]'
+            }`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${t.on ? 'bg-emerald-400' : 'bg-transparent border border-[#475569]'}`} />
+            <span>{t.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {adaptive ? (
+        <>
+          <div className="dsp-meter-card p-3 rounded-md flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <label htmlFor="denoise-strength" className="text-xs font-mono text-[#94a3b8]">Intensidad del ruido a quitar</label>
+              <span className="font-mono text-sm font-bold text-cyan-400">{Math.round(strength * 100)} %</span>
+            </div>
+            <input
+              id="denoise-strength"
+              type="range" min="0" max="1" step="0.05" value={strength} disabled={!denoise}
+              title="Más alto quita más ruido, pero la voz puede sonar metálica"
+              onChange={e => handleStrengthChange(parseFloat(e.target.value))}
+              className="w-full h-1 bg-[#1a1e27] rounded cursor-pointer disabled:opacity-40"
+            />
+          </div>
+
+          <div className="dsp-meter-card p-3 rounded-md font-mono text-xs flex items-center justify-between gap-2">
+            <span className="text-[#94a3b8]">Tonos que está cortando</span>
+            <span className={tones.length ? 'text-cyan-300 font-bold' : 'text-[#94a3b8]'}>
+              {tones.length ? tones.map(t => (t >= 1000 ? `${(t / 1000).toFixed(1)} kHz` : `${t} Hz`)).join(' · ') : 'ninguno'}
+            </span>
+          </div>
+
+          <details className="dsp-meter-card p-3 rounded-md">
+            <summary className="cursor-pointer text-xs font-mono text-[#94a3b8]">
+              Filtro fijo adicional (útil para zumbido de 50/60 Hz)
+            </summary>
+            <div className="pt-3">{fixedControls}</div>
+          </details>
+        </>
+      ) : (
+        fixedControls
+      )}
     </div>
   );
 };

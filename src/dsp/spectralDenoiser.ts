@@ -94,6 +94,8 @@ export class SpectralDenoiser {
   private readonly muPrefix: Float64Array;
   /** Noise power per bin actually used by the gain (read by tests). */
   public readonly noise: Float32Array;
+  /** 1 where the last frame detected a steady tone (read by the UI). */
+  public readonly toneFlag: Uint8Array;
   private initialised = false;
 
   /** Over-subtraction factor; the Wiener gain is ξ/(alpha/3 + ξ), so 3.0 = textbook Wiener. */
@@ -122,6 +124,7 @@ export class SpectralDenoiser {
     this.mPrefix = new Float64Array(this.bins + 1);
     this.muPrefix = new Float64Array(this.bins + 1);
     this.noise = new Float32Array(this.bins);
+    this.toneFlag = new Uint8Array(this.bins);
     this.gain = new Float32Array(this.bins).fill(1);
     this.reset();
   }
@@ -228,6 +231,7 @@ export class SpectralDenoiser {
         }
       }
       noise[k] = lam;
+      this.toneFlag[k] = isTone ? 1 : 0;
       // 3) Wiener gain with decision-directed a-priori SNR
       const gamma = P[k] / lam;
       const xi = DD_ALPHA * prevClean[k] / lam + (1 - DD_ALPHA) * Math.max(gamma - 1, 0);
