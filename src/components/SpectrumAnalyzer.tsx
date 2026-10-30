@@ -15,6 +15,14 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLogScale, setIsLogScale] = useState<boolean>(true);
   const [hoverFreq, setHoverFreq] = useState<number | null>(null);
+  const [adaptive, setAdaptive] = useState<boolean>(audioEngine.getAdaptiveMode());
+  const tonesSeen = useRef(new Map<number, number>()); // tone (rounded to 50 Hz) -> last time detected
+
+  // The mode is changed from another panel: follow it.
+  useEffect(() => {
+    const id = setInterval(() => setAdaptive(audioEngine.getAdaptiveMode()), 250);
+    return () => clearInterval(id);
+  }, []);
 
   // Helper: map frequency (Hz) to X coordinate on canvas
   const freqToX = (freq: number, width: number, minF: number = 20, maxF: number = 20000) => {
@@ -43,7 +51,7 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
   // Handle click on canvas to set notch filter frequency
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || audioEngine.getAdaptiveMode()) return; // in adaptive mode the tones are found automatically
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const freq = xToFreq(x, rect.width);
@@ -166,28 +174,45 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
       ctx.shadowBlur = 0; // Pure vector line without blurry glow
       ctx.stroke();
 
-      // Draw Active Filter Notch Marker
-      const notchX = freqToX(filterParams.frequency, width);
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = '#f43f5e';
-      ctx.setLineDash([3, 3]);
-      ctx.beginPath();
-      ctx.moveTo(notchX, 0);
-      ctx.lineTo(notchX, height);
-      ctx.stroke();
-      ctx.setLineDash([]);
+      if (audioEngine.getAdaptiveMode()) {
+        // Adaptive mode: mark the steady tones the denoiser is cutting right now (kept 1.5 s after last seen)
+        const now = performance.now();
+        for (const hz of audioEngine.getDetectedTonesHz()) tonesSeen.current.set(Math.round(hz / 50) * 50, now);
+        ctx.font = 'bold 11px JetBrains Mono, monospace';
+        for (const [hz, seenAt] of tonesSeen.current) {
+          if (now - seenAt > 1500) { tonesSeen.current.delete(hz); continue; }
+          const x = freqToX(hz, width);
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = '#06b6d4';
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, height);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = '#06b6d4';
+          ctx.fillText(hz >= 1000 ? `${(hz / 1000).toFixed(1)} kHz` : `${hz} Hz`, Math.max(5, Math.min(width - 65, x + 6)), 14);
+        }
+      } else {
+        // Fixed mode: the single frequency of the biquad filter
+        const notchX = freqToX(filterParams.frequency, width);
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = '#f43f5e';
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(notchX, 0);
+        ctx.lineTo(notchX, height);
+        ctx.stroke();
+        ctx.setLineDash([]);
 
-      // Notch indicator marker head
-      ctx.fillStyle = '#f43f5e';
-      ctx.beginPath();
-      ctx.arc(notchX, 10, 4, 0, Math.PI * 2);
-      ctx.fill();
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath();
+        ctx.arc(notchX, 10, 4, 0, Math.PI * 2);
+        ctx.fill();
 
-      // Filter frequency label badge
-      ctx.fillStyle = '#f43f5e';
-      ctx.font = 'bold 11px JetBrains Mono, monospace';
-      const fLabel = `${Math.round(filterParams.frequency)} Hz`;
-      ctx.fillText(fLabel, Math.max(5, Math.min(width - 65, notchX + 6)), 14);
+        ctx.font = 'bold 11px JetBrains Mono, monospace';
+        ctx.fillText(`${Math.round(filterParams.frequency)} Hz`, Math.max(5, Math.min(width - 65, notchX + 6)), 14);
+      }
 
       ctx.restore();
       animId = requestAnimationFrame(render);
@@ -217,14 +242,16 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
 
         {/* Auto Detect & Scale Controls */}
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleAutoDetect}
-            className="flex items-center gap-1.5 bg-[#171216] border border-[#3d1e28] text-rose-300 hover:text-white hover:bg-[#251520] px-2.5 py-1 rounded text-xs font-mono transition-colors"
-            title="Escanear espectro y sintonizar muesca sobre el armónico parásito"
-          >
-            <Activity className="w-3 h-3 text-rose-400" />
-            <span>Auto-Detectar</span>
-          </button>
+          {!adaptive && (
+            <button
+              onClick={handleAutoDetect}
+              className="flex items-center gap-1.5 bg-[#171216] border border-[#3d1e28] text-rose-300 hover:text-white hover:bg-[#251520] px-2.5 py-1 rounded text-xs font-mono transition-colors"
+              title="Escanear espectro y sintonizar muesca sobre el armónico parásito"
+            >
+              <Activity className="w-3 h-3 text-rose-400" />
+              <span>Auto-Detectar</span>
+            </button>
+          )}
 
           <div className="flex items-center dsp-well p-0.5 rounded-md text-xs font-mono">
             <button
@@ -248,7 +275,7 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
       </div>
 
       {/* Canvas Display Well */}
-      <div className="relative w-full h-52 sm:h-56 dsp-well rounded-md overflow-hidden cursor-crosshair">
+      <div className={`relative w-full h-52 sm:h-56 dsp-well rounded-md overflow-hidden ${adaptive ? 'cursor-default' : 'cursor-crosshair'}`}>
         <canvas
           ref={canvasRef}
           onClick={handleCanvasClick}
@@ -274,9 +301,11 @@ export const SpectrumAnalyzer: React.FC<SpectrumAnalyzerProps> = ({
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-          <span className="text-cyan-300">Filtrado (Muesca)</span>
+          <span className="text-cyan-300">Filtrado</span>
         </div>
-        <span className="text-[#94a3b8]">• Clic en el gráfico para mover f₀</span>
+        <span className="text-[#94a3b8]">
+          {adaptive ? '• Las líneas cian marcan los tonos que se están cortando' : '• Clic en el gráfico para mover f₀'}
+        </span>
       </div>
     </div>
   );
